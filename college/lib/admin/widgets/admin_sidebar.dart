@@ -5,8 +5,15 @@ import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
 
 class AdminSideBar extends StatelessWidget {
+  final String? id;
+  final String? adminEmail;
+  final String? adminName;
+
   const AdminSideBar({
     super.key,
+    this.id,
+    this.adminName,
+    this.adminEmail,
   });
 
   @override
@@ -26,11 +33,9 @@ class AdminSideBar extends StatelessWidget {
                 IconButton(icon: const Icon(Iconsax.user_tick, size: 60, color: Colors.white), onPressed: (){}),
                 const SizedBox(height: 10),
     
-                // Admin Name
-                const Text('Admin Name', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
-    
-                // Admin Email
-                const Text('admin@example.com', style: TextStyle(color: Colors.white70, fontSize: 14)),
+                // Admin Name and Email
+                Text(adminName??'No Name', style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                Text(adminEmail??'No Email', style: const TextStyle(color: Colors.white70, fontSize: 14)),
               ],
             ),
           ),

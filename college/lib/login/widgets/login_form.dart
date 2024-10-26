@@ -72,7 +72,7 @@ class LoginForm extends StatelessWidget {
                               authController.passwordController.text,
                             );
                           },
-                          child: const Text('Sign In as Instructor'),
+                          child: const Text('Sign In as Faculty'),
                         ),
                         const SizedBox(height: TSizes.spaceBtwInputFields),
                         ElevatedButton(

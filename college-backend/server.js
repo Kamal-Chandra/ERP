@@ -67,12 +67,31 @@ app.post('/login/admin', (req, res) => {
 
         if (result.length > 0) {
             if (password === result[0].password) {
-                res.json({ message: 'Login successful', instructorId: result[0].instructor_id });
+                res.json({ message: 'Login successful', adminId: result[0].admin_id });
             } else {
                 res.status(401).json({ message: 'Incorrect password' });
             }
         } else {
             res.status(404).json({ message: 'Username not found' });
+        }
+    });
+});
+
+
+// Endpoint to fetch admin details by admin_id
+app.get('/get-admin/:id', (req, res) => {
+    const adminId = req.params.id;
+
+    db.query('SELECT firstName, lastName, email, dob FROM admin WHERE admin_id = ?', [adminId], (error, results) => {
+        if (error) {
+            console.error(error);
+            return res.status(500).send('Server error');
+        }
+
+        if (results.length > 0) {
+            res.json(results[0]);
+        } else {
+            res.status(404).send('Admin not found');
         }
     });
 });
