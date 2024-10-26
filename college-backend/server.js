@@ -96,6 +96,20 @@ app.get('/get-admin/:id', (req, res) => {
     });
 });
 
+app.post('/admission/new', (req, res) => {
+    const { id, firstName, lastName, department_code } = req.body;
+    const query = 'INSERT INTO student (id, firstName, lastName, department_code) VALUES (?, ?, ?, ?)';
+  
+    db.query(query, [id, firstName, lastName, department_code], (err, result) => {
+      if (err) {
+        console.error('Error inserting new student:', err);
+        res.status(500).json({ message: 'Failed to add student' });
+      } else {
+        res.json({ message: 'Student added successfully' });
+      }
+    });
+});  
+
 // Fetch student data along with enrolled courses
 app.get('/students/:id', (req, res) => {
     const studentId = req.params.id;

@@ -11,7 +11,6 @@ class FeeManagement extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
       appBar: AppBar(title: const Text('Fee Management', style: TextStyle(color: TColors.primary)), centerTitle: true),
       body: Padding(
@@ -19,17 +18,28 @@ class FeeManagement extends StatelessWidget {
         child: Column(
           children: [
             // Search Field
-            TextField(
-              onChanged: (query) => feeController.searchStudents(query),
-              decoration: InputDecoration(
-                labelText: 'Search Students',
-                labelStyle: const TextStyle(color: Colors.white),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8.0)),
-                suffixIcon: IconButton(
-                  icon: const Icon(Iconsax.search_normal, color: Colors.white),
-                  onPressed: () {},
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    onChanged: (query) => feeController.searchStudents(query),
+                    decoration: InputDecoration(
+                      labelText: 'Search Students',
+                      labelStyle: const TextStyle(color: Colors.white),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8.0)),
+                      suffixIcon: IconButton(
+                        icon: const Icon(Iconsax.search_normal, color: Colors.white),
+                        onPressed: () {},
+                      ),
+                    ),
+                  ),
                 ),
-              ),
+                const SizedBox(width: TSizes.md),
+                IconButton(
+                  icon: const Icon(Iconsax.refresh, color: Colors.white),
+                  onPressed: ()=>feeController.fetchStudents(),
+                ),
+              ]
             ),
             const SizedBox(height: 20),
 

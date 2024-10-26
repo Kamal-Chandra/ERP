@@ -20,7 +20,7 @@ class AdminSideBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final AdminDashboardController dashboardController = Get.find();
     return Container(
-      width: 275,  // Width of the sidebar
+      width: 275,
       color: Colors.transparent,
       child: ListView(
         children: <Widget>[
@@ -29,7 +29,6 @@ class AdminSideBar extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                // Icon Button as profile placeholder
                 IconButton(icon: const Icon(Iconsax.user_tick, size: 60, color: Colors.white), onPressed: (){}),
                 const SizedBox(height: 10),
     
@@ -46,7 +45,7 @@ class AdminSideBar extends StatelessWidget {
           SidebarTile(icon: Iconsax.book, title: 'Library', onTap: ()=>dashboardController.setCurrentView('Library')),
           SidebarTile(icon: Iconsax.house, title: 'Hostel', onTap: ()=>dashboardController.setCurrentView('Hostel')),
           SidebarTile(icon: Iconsax.message_question, title: 'Feedback', onTap: ()=>dashboardController.setCurrentView('Feedback')),
-          SidebarTile(icon: Iconsax.briefcase, title: 'Placements', onTap: ()=>dashboardController.setCurrentView('Placements')),
+          SidebarTile(icon: Iconsax.briefcase, title: 'Placements', onTap: (){dashboardController.setCurrentView('Placements');}),
           SidebarTile(icon: Iconsax.user_octagon, title: 'Alumni Network', onTap: (){}),
         ],
       ),

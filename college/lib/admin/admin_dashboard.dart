@@ -55,11 +55,11 @@ class AdminDashboard extends StatelessWidget {
       body: Row(
         children: [
           // Sidebar
-          AdminSideBar(
+          Obx(()=>AdminSideBar(
             id: adminId,
             adminEmail: dashboardController.adminEmail.value,
             adminName: dashboardController.adminName.value,
-          ),
+          )),
 
           // Content
           Expanded(

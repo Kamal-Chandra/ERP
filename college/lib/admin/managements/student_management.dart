@@ -94,6 +94,60 @@ class StudentManagement extends StatelessWidget {
           ],
         ),
       ),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: TColors.primary,
+        onPressed: () {
+          _showNewStudentDialog(context, studentController);
+        },
+        child: const Icon(Iconsax.add),
+      ),
+    );
+  }
+
+  void _showNewStudentDialog(BuildContext context, AdminStudentController studentController) {
+    final idController = TextEditingController();
+    final firstNameController = TextEditingController();
+    final lastNameController = TextEditingController();
+    final departmentCodeController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("New Admission"),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(controller: idController, decoration: const InputDecoration(labelText: "ID")),
+              const SizedBox(height: TSizes.sm),
+              TextField(controller: firstNameController, decoration: const InputDecoration(labelText: "First Name")),
+              const SizedBox(height: TSizes.sm),
+              TextField(controller: lastNameController, decoration: const InputDecoration(labelText: "Last Name")),
+              const SizedBox(height: TSizes.sm),
+              TextField(controller: departmentCodeController, decoration: const InputDecoration(labelText: "Department Code")),
+              const SizedBox(height: TSizes.sm),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Get.back(),
+              child: const Text("Cancel"),
+            ),
+            TextButton(
+              onPressed: () {
+                studentController.addStudent(
+                  int.parse(idController.text),
+                  firstNameController.text,
+                  lastNameController.text,
+                  departmentCodeController.text,
+                );
+                Get.back();
+              },
+              child: const Text("Submit"),
+            ),
+          ],
+        );
+      },
     );
   }
 }
@@ -148,6 +202,30 @@ class AdminStudentController extends GetxController {
       Get.snackbar('Error', 'Failed to connect to the server');
     } finally {
       isLoading(false);
+    }
+  }
+
+  Future<void> addStudent(int id, String firstName, String lastName, String departmentCode) async {
+    try {
+      final response = await http.post(
+        Uri.parse('http://localhost:3000/admission/new'),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({
+          "id": id,
+          "firstName": firstName,
+          "lastName": lastName,
+          "department_code": departmentCode,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        Get.snackbar("Success", "Student added successfully");
+        fetchDepartments();  // Refresh departments if you show updated lists
+      } else {
+        Get.snackbar("Error", "Failed to add student");
+      }
+    } catch (e) {
+      Get.snackbar("Error", "Failed to connect to the server");
     }
   }
 }
