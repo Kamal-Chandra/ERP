@@ -38,7 +38,7 @@ class FeeManagement extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Obx(() {
-                  if (feeController.isLoading.value) return const Center(child: CircularProgressIndicator());
+                  if (feeController.isLoading.value) return const SizedBox();
                   return Wrap(
                     spacing: 16.0,
                     runSpacing: 16.0,

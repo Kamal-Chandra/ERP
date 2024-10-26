@@ -76,7 +76,12 @@ class LoginForm extends StatelessWidget {
                         ),
                         const SizedBox(height: TSizes.spaceBtwInputFields),
                         ElevatedButton(
-                          onPressed: () {},
+                          onPressed: () {
+                            authController.loginAdmin(
+                              authController.usernameController.text,
+                              authController.passwordController.text,
+                            );
+                          },
                           child: const Text('Sign In as Admin'),
                         ),
                         Obx(() {

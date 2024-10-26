@@ -1,3 +1,4 @@
+import 'package:college/admin/admin_dashboard.dart';
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
 import 'package:college/login/api.dart';
@@ -13,19 +14,30 @@ class LoginController extends GetxController {
   final TextEditingController usernameController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
+  void showSnackbar(String title, String message, {bool isSuccess = false}) {
+    Get.snackbar(
+      title,
+      message,
+      snackPosition: SnackPosition.TOP,
+      backgroundColor: isSuccess ? Colors.green : Colors.red,
+      colorText: Colors.white,
+      duration: const Duration(seconds: 3),
+    );
+  }
+
   Future<void> loginStudent(String username, String password) async {
     isLoading.value = true;
     try {
       final response = await Api.loginStudent(username, password);
       if (response.statusCode == 200) {
         final studentId = response.data['studentId'];
-        loginMessage.value = 'Login successful';
+        showSnackbar('Success', 'Login successful', isSuccess: true);
         Get.to(() => StudentDashboard(id: studentId));
       } else {
-        loginMessage.value = 'Login failed: ${response.data['message']}';
+        showSnackbar('Error', 'Login failed: ${response.data['message']}');
       }
     } catch (e) {
-      loginMessage.value = 'An error occurred';
+      showSnackbar('Error', 'An error occurred');
     } finally {
       isLoading.value = false;
     }
@@ -37,13 +49,31 @@ class LoginController extends GetxController {
       final response = await Api.loginInstructor(username, password);
       if (response.statusCode == 200) {
         final instructorId = response.data['instructorId'];
-        loginMessage.value = 'Login successful';
+        showSnackbar('Success', 'Login successful', isSuccess: true);
         Get.to(() => InstructorDashboard(id: instructorId));
       } else {
-        loginMessage.value = 'Login failed: ${response.data['message']}';
+        showSnackbar('Error', 'Login failed: ${response.data['message']}');
       }
     } catch (e) {
-      loginMessage.value = 'An error occurred';
+      showSnackbar('Error', 'An error occurred');
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  Future<void> loginAdmin(String username, String password) async {
+    isLoading.value = true;
+    try {
+      final response = await Api.loginAdmin(username, password);
+      if (response.statusCode == 200) {
+        final adminId = response.data['adminId'];
+        showSnackbar('Success', 'Login successful', isSuccess: true);
+        Get.to(() => AdminDashboard(id: adminId));
+      } else {
+        showSnackbar('Error', 'Login failed: ${response.data['message']}');
+      }
+    } catch (e) {
+      showSnackbar('Error', 'An error occurred');
     } finally {
       isLoading.value = false;
     }

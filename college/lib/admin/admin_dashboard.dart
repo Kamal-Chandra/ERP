@@ -18,7 +18,7 @@ class AdminDashboardController extends GetxController {
 }
 
 class AdminDashboard extends StatelessWidget {
-  const AdminDashboard({super.key});
+  const AdminDashboard({super.key, required id});
 
   @override
   Widget build(BuildContext context) {

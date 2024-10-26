@@ -41,7 +41,7 @@ class TTexts {
   static const String loginTitle = "Welcome";
   static const String submit = "Submit";
   static const String done = "Done";
-  static const String loginSubtitle = "Please Enter ID and Password to Login";
+  static const String loginSubtitle = "Please Enter Username and Password to Login";
   static const String signupTitle = "Let's create your account";
   static const String forgotPasswordTitle = "Forgot Password";
   static const String forgotPasswordSubtitle = "Don't worry sometimes people can forget too, enter your email and we will send you a password reset link.";

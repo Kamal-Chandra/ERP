@@ -1,4 +1,3 @@
-import 'package:college/utils/constants/sizes.dart';
 import 'widgets/login_form.dart';
 import 'widgets/login_header.dart';
 import 'package:flutter/material.dart';
@@ -12,18 +11,11 @@ class LoginScreen extends StatelessWidget {
       body: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Padding(
-            padding: EdgeInsets.all(TSizes.defaultSpace),
-            child: Column(
-              children: [
-                // Title & Sub-Title
-                LoginHeader(),
-
-                // Form
-                LoginForm(),
-              ],
-            ),
-          ),
+          // Title & Sub-Title
+          LoginHeader(),
+          
+          // Form
+          LoginForm(),
         ],
       ),
     );

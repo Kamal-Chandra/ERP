@@ -22,4 +22,14 @@ class Api {
       },
     );
   }
+
+  static Future<Response> loginAdmin(String username, String password) {
+    return _dio.post(
+      'http://localhost:3000/login/admin',
+      data: {
+        'username': username,
+        'password': password,
+      },
+    );
+  }
 }

@@ -64,7 +64,6 @@ class StudentManagement extends StatelessWidget {
                   );
                 }
 
-                // Show department grid when no search query is present
                 if (studentController.departments.isEmpty) {
                   return const Center(child: Text('No departments found.'));
                 }

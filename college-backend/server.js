@@ -58,6 +58,25 @@ app.post('/login/instructor', (req, res) => {
     });
 });
 
+app.post('/login/admin', (req, res) => {
+    const { username, password } = req.body;
+    const query = 'SELECT * FROM admin_login WHERE username = ?';
+
+    db.query(query, [username], (err, result) => {
+        if (err) throw err;
+
+        if (result.length > 0) {
+            if (password === result[0].password) {
+                res.json({ message: 'Login successful', instructorId: result[0].instructor_id });
+            } else {
+                res.status(401).json({ message: 'Incorrect password' });
+            }
+        } else {
+            res.status(404).json({ message: 'Username not found' });
+        }
+    });
+});
+
 // Fetch student data along with enrolled courses
 app.get('/students/:id', (req, res) => {
     const studentId = req.params.id;
