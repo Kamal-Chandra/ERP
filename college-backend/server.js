@@ -457,6 +457,80 @@ app.post('/introduce-fee', (req, res) => {
     });
   });
 
+// Endpoint to get hostel statistics
+app.get('/hostel-stats', (req, res) => {
+    const totalQuery = 'SELECT COUNT(*) AS total_students FROM student';
+    const hostellersQuery = "SELECT COUNT(*) AS hostellers FROM hostel WHERE allocation_status = 'allocated'";
+    const dayScholarsQuery = "SELECT COUNT(*) AS day_scholars FROM hostel WHERE allocation_status = 'not_allocated'";
+  
+    db.query(totalQuery, (err, totalResult) => {
+      if (err) return res.status(500).json({ error: err.message });
+  
+      db.query(hostellersQuery, (err, hostellersResult) => {
+        if (err) return res.status(500).json({ error: err.message });
+  
+        db.query(dayScholarsQuery, (err, dayScholarsResult) => {
+          if (err) return res.status(500).json({ error: err.message });
+  
+          res.json({
+            total_students: totalResult[0].total_students,
+            hostellers: hostellersResult[0].hostellers,
+            day_scholars: dayScholarsResult[0].day_scholars,
+          });
+        });
+      });
+    });
+});
+  
+// Endpoint to get students with hostel info
+app.get('/students-with-hostel-info', (req, res) => {
+    const query = `
+        SELECT s.id, s.firstName, s.lastName, h.room_number, h.allocation_status 
+        FROM student s
+        LEFT JOIN hostel h ON s.id = h.student_id
+    `;
+    db.query(query, (err, results) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json(results);
+    });
+});
+
+// Endpoint to search students by name, room number, ID, or allocation status
+app.get('/search-hostel-students', (req, res) => {
+    const query = req.query.query.trim();
+
+    const searchQuery = `
+        SELECT s.id, s.firstName, s.lastName, h.room_number, h.allocation_status 
+        FROM student s
+        LEFT JOIN hostel h ON s.id = h.student_id
+        WHERE LOWER(s.firstName) LIKE LOWER(?) 
+           OR LOWER(s.lastName) LIKE LOWER(?) 
+           OR h.room_number = ? 
+           OR s.id = ? 
+           OR LOWER(h.allocation_status) = LOWER(?)
+           OR LOWER(REPLACE(h.allocation_status, '_', ' ')) = LOWER(?)
+    `;
+    
+    db.query(searchQuery, [`%${query}%`, `%${query}%`, query, query, query, query], (err, results) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json(results);
+    });
+});
+
+// Endpoint to allocate a room to a student
+app.post('/allocate-room', (req, res) => {
+    const { student_id, room_number } = req.body;
+    const updateQuery = `
+        INSERT INTO hostel (student_id, allocation_status, room_number)
+        VALUES (?, 'allocated', ?)
+        ON DUPLICATE KEY UPDATE allocation_status = 'allocated', room_number = ?
+    `;
+    db.query(updateQuery, [student_id, room_number, room_number], (err, result) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json({ message: 'Room allocated successfully' });
+    });
+});  
+
 app.listen(3000, () => {
     console.log('Server running on port 3000');
 });

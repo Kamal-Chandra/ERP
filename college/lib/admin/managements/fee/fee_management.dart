@@ -24,7 +24,7 @@ class FeeManagement extends StatelessWidget {
                   child: TextField(
                     onChanged: (query) => feeController.searchStudents(query),
                     decoration: InputDecoration(
-                      labelText: 'Search Students',
+                      labelText: 'Search',
                       labelStyle: const TextStyle(color: Colors.white),
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(8.0)),
                       suffixIcon: IconButton(
@@ -37,7 +37,10 @@ class FeeManagement extends StatelessWidget {
                 const SizedBox(width: TSizes.md),
                 IconButton(
                   icon: const Icon(Iconsax.refresh, color: Colors.white),
-                  onPressed: ()=>feeController.fetchStudents(),
+                  onPressed: (){
+                    feeController.fetchFeeStatistics();
+                    feeController.fetchStudents();
+                  },
                 ),
               ]
             ),

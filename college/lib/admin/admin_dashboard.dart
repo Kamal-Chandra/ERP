@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'managements/admin_feedback.dart';
 import 'managements/admin_placement.dart';
-import 'managements/hostel_management.dart';
+import 'managements/hostel/hostel_management.dart';
 import 'managements/faculty_management.dart';
 import 'managements/student_management.dart';
 import 'managements/library_management.dart';
@@ -76,7 +76,7 @@ class AdminDashboard extends StatelessWidget {
                 case 'Library':
                   return const LibraryManagement();
                 case 'Hostel':
-                  return const HostelManagement();
+                  return HostelManagement();
                 case 'Feedback':
                   return const AdminFeedback();
                 case 'Placements':
