@@ -77,7 +77,6 @@ app.post('/login/admin', (req, res) => {
     });
 });
 
-
 // Endpoint to fetch admin details by admin_id
 app.get('/get-admin/:id', (req, res) => {
     const adminId = req.params.id;
@@ -109,6 +108,22 @@ app.post('/admission/new', (req, res) => {
       }
     });
 });  
+
+// Endpoint to add a new faculty member
+app.post('/faculty/new', (req, res) => {
+    const { id, firstName, lastName, department } = req.body;
+    if (!id || !firstName || !lastName || !department) {
+        return res.status(400).json({ message: 'All fields are required.' });
+    }
+    const sql = 'INSERT INTO instructor (id, firstName, lastName, department) VALUES (?, ?, ?, ?)';
+    db.query(sql, [id, firstName, lastName, department], (err, result) => {
+        if (err) {
+            console.error('Error inserting faculty:', err);
+            return res.status(500).json({ message: 'Error adding faculty.' });
+        }
+        res.status(200).json({ message: 'Faculty added successfully!', facultyId: result.insertId });
+    });
+});
 
 // Fetch student data along with enrolled courses
 app.get('/students/:id', (req, res) => {
@@ -202,9 +217,7 @@ app.get('/departments-with-students', (req, res) => {
     const query = `
         SELECT d.name AS department_name, COUNT(s.id) AS student_count
         FROM department d
-        LEFT JOIN course c ON d.code = c.department
-        LEFT JOIN enrollment e ON c.id = e.course_id
-        LEFT JOIN student s ON e.student_id = s.id
+        LEFT JOIN student s ON d.code = s.department_code
         GROUP BY d.name;
     `;
 
@@ -214,10 +227,9 @@ app.get('/departments-with-students', (req, res) => {
     });
 });
 
-
 // Search Students
 app.get('/search-students', (req, res) => {
-    const searchQuery = req.query.query || ''; // Optional query
+    const searchQuery = req.query.query || '';
     const query = `
         SELECT id, firstName, lastName, department_code
         FROM student
@@ -244,7 +256,6 @@ app.get('/search-students', (req, res) => {
         }
     });
 });
-
 
 // Fetch departments with faculty count
 app.get('/departments-with-faculty', (req, res) => {

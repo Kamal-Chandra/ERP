@@ -20,17 +20,27 @@ class StudentManagement extends StatelessWidget {
         child: Column(
           children: [
             // Search Bar
-            TextField(
-              onChanged: (query) {
-                studentController.searchStudents(query);
-              },
-              decoration: InputDecoration(
-                labelText: 'Search Students',
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8.0)),
-                suffixIcon: IconButton(icon: const Icon(Iconsax.search_normal), onPressed: () {}),
-              ),
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    onChanged: (query) {
+                      studentController.searchStudents(query);
+                    },
+                    decoration: InputDecoration(
+                      labelText: 'Search Students',
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8.0)),
+                      suffixIcon: IconButton(icon: const Icon(Iconsax.search_normal), onPressed: () {}),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: TSizes.md),
+                IconButton(
+                  icon: const Icon(Iconsax.refresh, color: Colors.white),
+                  onPressed: ()=>studentController.fetchDepartments(),
+                ),
+              ],
             ),
-            const SizedBox(height: 20),
 
             // Display Departments or Search Results
             Expanded(
@@ -68,26 +78,29 @@ class StudentManagement extends StatelessWidget {
                   return const Center(child: Text('No departments found.'));
                 }
 
-                return GridView.builder(
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 3,
-                    childAspectRatio: 3.5,
-                    crossAxisSpacing: 8.0,
-                    mainAxisSpacing: 8.0,
+                return Padding(
+                  padding: const EdgeInsets.only(top: TSizes.md),
+                  child: GridView.builder(
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 3,
+                      childAspectRatio: 3.5,
+                      crossAxisSpacing: 8.0,
+                      mainAxisSpacing: 2.0,
+                    ),
+                    itemCount: studentController.departments.length,
+                    itemBuilder: (context, index) {
+                      final department = studentController.departments[index];
+                      return Card(
+                        margin: const EdgeInsets.symmetric(vertical: TSizes.sm),
+                        child: ListTile(
+                          title: Text(department['department_name'], style: Theme.of(context).textTheme.titleLarge),
+                          subtitle: Text('Students: ${department['student_count']}', style: Theme.of(context).textTheme.titleMedium),
+                          trailing: const Icon(Iconsax.graph),
+                          onTap: () {},
+                        ),
+                      );
+                    },
                   ),
-                  itemCount: studentController.departments.length,
-                  itemBuilder: (context, index) {
-                    final department = studentController.departments[index];
-                    return Card(
-                      margin: const EdgeInsets.symmetric(vertical: TSizes.sm),
-                      child: ListTile(
-                        title: Text(department['department_name'], style: Theme.of(context).textTheme.titleLarge),
-                        subtitle: Text('Students: ${department['student_count']}', style: Theme.of(context).textTheme.titleMedium),
-                        trailing: const Icon(Iconsax.graph),
-                        onTap: () {},
-                      ),
-                    );
-                  },
                 );
               }),
             ),
@@ -166,6 +179,7 @@ class AdminStudentController extends GetxController {
 
   // Fetch department data
   Future<void> fetchDepartments() async {
+    isLoading(true);
     try {
       final response = await http.get(Uri.parse('http://localhost:3000/departments-with-students'));
       if (response.statusCode == 200) {
@@ -220,7 +234,7 @@ class AdminStudentController extends GetxController {
 
       if (response.statusCode == 200) {
         Get.snackbar("Success", "Student added successfully");
-        fetchDepartments();  // Refresh departments if you show updated lists
+        fetchDepartments();
       } else {
         Get.snackbar("Error", "Failed to add student");
       }

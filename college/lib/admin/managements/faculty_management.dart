@@ -20,17 +20,27 @@ class FacultyManagement extends StatelessWidget {
         child: Column(
           children: [
             // Search Bar
-            TextField(
-              onChanged: (query) {
-                facultyController.searchFaculty(query);
-              },
-              decoration: InputDecoration(
-                labelText: 'Search Faculty',
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8.0)),
-                suffixIcon: IconButton(icon: const Icon(Iconsax.search_normal), onPressed: () {}),
-              ),
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    onChanged: (query) {
+                      facultyController.searchFaculty(query);
+                    },
+                    decoration: InputDecoration(
+                      labelText: 'Search Faculty',
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8.0)),
+                      suffixIcon: IconButton(icon: const Icon(Iconsax.search_normal), onPressed: () {}),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: TSizes.md),
+                IconButton(
+                  icon: const Icon(Iconsax.refresh, color: Colors.white),
+                  onPressed: () => facultyController.fetchDepartments(),
+                ),
+              ],
             ),
-            const SizedBox(height: 20),
 
             // Display Departments or Search Results
             Expanded(
@@ -69,32 +79,89 @@ class FacultyManagement extends StatelessWidget {
                   return const Center(child: Text('No departments found.'));
                 }
 
-                return GridView.builder(
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 3,
-                    childAspectRatio: 3.5,
-                    crossAxisSpacing: 8.0,
-                    mainAxisSpacing: 8.0,
+                return Padding(
+                  padding: const EdgeInsets.only(top: TSizes.md),
+                  child: GridView.builder(
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 3,
+                      childAspectRatio: 3.5,
+                      crossAxisSpacing: 8.0,
+                      mainAxisSpacing: 2.0,
+                    ),
+                    itemCount: facultyController.departments.length,
+                    itemBuilder: (context, index) {
+                      final department = facultyController.departments[index];
+                      return Card(
+                        margin: const EdgeInsets.symmetric(vertical: TSizes.sm),
+                        child: ListTile(
+                          title: Text(department['name'], style: Theme.of(context).textTheme.titleLarge),
+                          subtitle: Text('Faculty Count: ${department['faculty_count']}', style: Theme.of(context).textTheme.titleMedium),
+                          trailing: const Icon(Iconsax.graph),
+                          onTap: () {},
+                        ),
+                      );
+                    },
                   ),
-                  itemCount: facultyController.departments.length,
-                  itemBuilder: (context, index) {
-                    final department = facultyController.departments[index];
-                    return Card(
-                      margin: const EdgeInsets.symmetric(vertical: TSizes.sm),
-                      child: ListTile(
-                        title: Text(department['name'], style: Theme.of(context).textTheme.titleLarge),
-                        subtitle: Text('Faculty Count: ${department['faculty_count']}', style: Theme.of(context).textTheme.titleMedium),
-                        trailing: const Icon(Iconsax.graph),
-                        onTap: () {},
-                      ),
-                    );
-                  },
                 );
               }),
             ),
           ],
         ),
       ),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: TColors.primary,
+        onPressed: () {
+          _showNewFacultyDialog(context, facultyController);
+        },
+        child: const Icon(Iconsax.add),
+      ),
+    );
+  }
+
+  void _showNewFacultyDialog(BuildContext context, AdminFacultyController facultyController) {
+    final idController = TextEditingController();
+    final firstNameController = TextEditingController();
+    final lastNameController = TextEditingController();
+    final departmentController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("New Faculty Member"),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(controller: idController, decoration: const InputDecoration(labelText: "ID")),
+              const SizedBox(height: TSizes.sm),
+              TextField(controller: firstNameController, decoration: const InputDecoration(labelText: "First Name")),
+              const SizedBox(height: TSizes.sm),
+              TextField(controller: lastNameController, decoration: const InputDecoration(labelText: "Last Name")),
+              const SizedBox(height: TSizes.sm),
+              TextField(controller: departmentController, decoration: const InputDecoration(labelText: "Department Code")),
+              const SizedBox(height: TSizes.sm),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Get.back(),
+              child: const Text("Cancel"),
+            ),
+            TextButton(
+              onPressed: () {
+                facultyController.addFaculty(
+                  int.parse(idController.text),
+                  firstNameController.text,
+                  lastNameController.text,
+                  departmentController.text,
+                );
+                Get.back();
+              },
+              child: const Text("Submit"),
+            ),
+          ],
+        );
+      },
     );
   }
 }
@@ -113,6 +180,7 @@ class AdminFacultyController extends GetxController {
 
   // Fetch department data with faculty counts
   Future<void> fetchDepartments() async {
+    isLoading(true);
     try {
       final response = await http.get(Uri.parse('http://localhost:3000/departments-with-faculty'));
       if (response.statusCode == 200) {
@@ -149,6 +217,30 @@ class AdminFacultyController extends GetxController {
       Get.snackbar('Error', 'Failed to connect to the server');
     } finally {
       isLoading(false);
+    }
+  }
+
+  Future<void> addFaculty(int id, String firstName, String lastName, String department) async {
+    try {
+      final response = await http.post(
+        Uri.parse('http://localhost:3000/faculty/new'),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({
+          "id": id,
+          "firstName": firstName,
+          "lastName": lastName,
+          "department": department,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        Get.snackbar("Success", "Faculty added successfully");
+        fetchDepartments();
+      } else {
+        Get.snackbar("Error", "Failed to add faculty");
+      }
+    } catch (e) {
+      Get.snackbar("Error", "Failed to connect to the server");
     }
   }
 }
