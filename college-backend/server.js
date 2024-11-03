@@ -10,7 +10,7 @@ app.use(bodyParser.json());
 const db = mysql.createConnection({
     host: 'localhost',
     user: 'root',
-    password: 'Prateek',
+    password: 'MySQLRoot',
     database: 'college'
 });
 
@@ -579,8 +579,6 @@ app.get('/students/:studentId/courses', async (req, res) => {
     }
 });
 
-
-
 // Fetch books issued by a specific student
 app.get('/students/:id/books', (req, res) => {
     const studentId = req.params.id;
@@ -688,7 +686,7 @@ app.get('/students/:studentId/hostel', (req, res) => {
 // Feedback routes
 app.post('/student-feedback', (req, res) => {
     const { giver_id, subject, feedback_text } = req.body;
-    const date_posted = new Date().toISOString().split('T')[0]; // Current date
+    const date_posted = new Date().toISOString().split('T')[0];
   
     const insertQuery = `
       INSERT INTO student_feedback (giver_id, subject, status, date_posted, feedback_text)
@@ -704,7 +702,7 @@ app.post('/student-feedback', (req, res) => {
 
   app.post('/faculty-feedback', (req, res) => {
     const { giver_id, subject, feedback_text } = req.body;
-    const date_posted = new Date().toISOString().split('T')[0]; // Current date
+    const date_posted = new Date().toISOString().split('T')[0];
   
     const insertQuery = `
       INSERT INTO faculty_feedback (giver_id, subject, status, date_posted, feedback_text)
@@ -774,7 +772,7 @@ app.put('/courses/:courseId/students/:studentId/marks', (req, res) => {
 
 // Fetch all courses taught by a specific instructor along with their strength
 app.get('/instructors/:instructorId/courses', (req, res) => {
-    const instructorId = parseInt(req.params.instructorId, 10); // Parse the instructorId to an integer
+    const instructorId = parseInt(req.params.instructorId, 10);
     const query = `
         SELECT 
             c.id AS course_id,
@@ -799,12 +797,6 @@ app.get('/instructors/:instructorId/courses', (req, res) => {
         res.json(results);
     });
 });
-
-
-
-  
-  
-
 
 app.listen(3000, () => {
     console.log('Server running on port 3000');

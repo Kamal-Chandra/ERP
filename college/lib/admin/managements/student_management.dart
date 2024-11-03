@@ -62,7 +62,7 @@ class StudentManagement extends StatelessWidget {
                       final student = studentController.students[index];
                       return Card(
                         margin: const EdgeInsets.symmetric(vertical: 8.0),
-                        child: ListTile(
+                        child: ListTile (
                           title: Text('${student['firstName']} ${student['lastName']}',
                               style: Theme.of(context).textTheme.titleLarge),
                           subtitle: Text('ID: ${student['id']}\nDepartment: ${student['department_code']}',
