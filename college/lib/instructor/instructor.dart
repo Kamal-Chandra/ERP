@@ -1,98 +1,103 @@
-import 'package:get/get.dart';
-import 'package:college/app_bar.dart';
 import 'package:flutter/material.dart';
-import 'package:college/utils/constants/sizes.dart';
-import 'package:college/instructor/update_marks.dart';
+import 'package:get/get.dart';
 import 'package:college/instructor/instructor_controller.dart';
+import 'package:college/instructor/courses_page.dart';
+import 'package:college/instructor/library_page.dart';
+import 'package:college/instructor/feedback_page.dart';
 
-class InstructorDashboard extends StatelessWidget {
-  const InstructorDashboard({super.key, required this.id});
+class InstructorDashboard extends StatefulWidget {
   final int id;
+
+  const InstructorDashboard({Key? key, required this.id}) : super(key: key);
+
+  @override
+  _InstructorDashboardState createState() => _InstructorDashboardState();
+}
+
+class _InstructorDashboardState extends State<InstructorDashboard> {
+  final InstructorController instructorController =
+      Get.put(InstructorController());
+  int selectedIndex = 0;
+
+  late final List<Widget> _pages;
+
+  @override
+  void initState() {
+    super.initState();
+    instructorController.fetchInstructorData(widget.id);
+
+    _pages = [
+      FacultyCoursesPage(instructorId: widget.id),
+      FacultyLibraryPage(instructorId: widget.id),
+      FacultyFeedbackPage(facultyId: widget.id),
+    ];
+  }
 
   @override
   Widget build(BuildContext context) {
-    final instructorController = Get.put(InstructorController());
-    instructorController.fetchInstructorData(id);
     return Scaffold(
-      appBar: const TAppBar(title: Text('Instructor Dashboard'), showBackArrow: true),
-      body: Container(
-        alignment: Alignment.centerLeft,
-        child: SizedBox(
-          width: TSizes.buttonWidth * 5,
-          child: Padding(
-            padding: const EdgeInsets.all(TSizes.lg),
+      body: Row(
+        children: [
+          // Sidebar
+          Container(
+            width: 250,
+            color: Colors.black,
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // Instructor Details Section
-                Obx(() => Card(
-                      child: Padding(
-                        padding: const EdgeInsets.all(TSizes.md),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text('Name: ${instructorController.instructorName.value}',
-                                style: Theme.of(context).textTheme.headlineSmall),
-                            Text('ID: ${instructorController.instructorId.value}',
-                                style: Theme.of(context).textTheme.headlineSmall),
-                            Text('Department: ${instructorController.department.value}',
-                                style: Theme.of(context).textTheme.headlineSmall),
-                          ],
-                        ),
-                      ),
-                    )),
-                const SizedBox(height: TSizes.spaceBtwItems),
-
-                // Courses Section
-                Obx(() => Card(
-                      child: Padding(
-                        padding: const EdgeInsets.all(TSizes.md),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text('Courses:', style: Theme.of(context).textTheme.titleMedium),
-                            const SizedBox(height: TSizes.sm),
-                            if (instructorController.courses.isNotEmpty)
-                              Column(
-                                children: instructorController.courses.map((course) {
-                                  return ListTile(
-                                    title:Text('${course['course_id']}: ${course['course_name']}'),
-                                  );
-                                }).toList(),
-                              )
-                            else
-                              Text('No courses available',
-                                  style: Theme.of(context).textTheme.bodyMedium),
-                          ],
-                        ),
-                      ),
-                    )),
-                const SizedBox(height: TSizes.spaceBtwItems),
-
-                // Buttons Exam Schedule, and Update Marks
-                Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      const SizedBox(height: TSizes.spaceBtwItems),
-                      ElevatedButton(
-                        onPressed: () {},
-                        child: const Text('View Exam Schedule'),
-                      ),
-                      const SizedBox(height: TSizes.spaceBtwItems),
-                      ElevatedButton(
-                        onPressed: () => Get.to(() => const UpdateMarksPage()),
-                        child: const Text('Update Marks'),
-                      ),
-                    ],
-                  ),
+                const SizedBox(height: 40),
+                CircleAvatar(
+                  radius: 40,
+                  backgroundColor: Colors.grey[700],
+                  child: Icon(Icons.person, size: 40, color: Colors.white),
                 ),
+                const SizedBox(height: 16),
+                Obx(() {
+                  return Column(
+                    children: [
+                      Text(
+                        'Name: ${instructorController.instructorName.value}',
+                        style:
+                            const TextStyle(color: Colors.white, fontSize: 20),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'ID: ${instructorController.instructorId.value}',
+                        style:
+                            const TextStyle(color: Colors.white, fontSize: 18),
+                      ),
+                      const Divider(color: Colors.grey),
+                    ],
+                  );
+                }),
+                _buildSidebarItem("Courses", Icons.book, 0),
+                _buildSidebarItem("Library", Icons.library_books, 1),
+                _buildSidebarItem("Feedback", Icons.feedback, 2),
               ],
             ),
           ),
-        ),
+
+          Expanded(
+            child: Container(
+              color: Colors.white,
+              child: _pages[selectedIndex],
+            ),
+          ),
+        ],
       ),
+    );
+  }
+
+  Widget _buildSidebarItem(String title, IconData icon, int index) {
+    return ListTile(
+      leading: Icon(icon, color: Colors.white),
+      title: Text(title, style: const TextStyle(color: Colors.white)),
+      selected: selectedIndex == index,
+      selectedTileColor: Colors.grey[700],
+      onTap: () {
+        setState(() {
+          selectedIndex = index;
+        });
+      },
     );
   }
 }
