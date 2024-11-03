@@ -10,7 +10,7 @@ app.use(bodyParser.json());
 const db = mysql.createConnection({
     host: 'localhost',
     user: 'root',
-    password: 'MySQLRoot',
+    password: 'Prateek',
     database: 'college'
 });
 
@@ -412,6 +412,281 @@ app.post('/introduce-fee', (req, res) => {
         });
     });
   });
+
+// Endpoint to get unpaid fees details for a specific student
+app.get('/unpaid-fees/details/:studentId', (req, res) => {
+    const studentId = req.params.studentId;
+
+    const sql = `
+        SELECT f.fee_type, f.amount, f.due_date
+        FROM fee f 
+        WHERE f.student_id = ? AND f.status = 'unpaid'
+    `;
+
+    db.query(sql, [studentId], (err, results) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).json({ error: 'Database query failed' });
+        }
+
+        res.json(results);
+    });
+});
+
+// Fetch courses with instructor name and student marks
+app.get('/students/:studentId/courses', async (req, res) => {
+    const { studentId } = req.params;
+
+    const query = `
+        SELECT 
+            course.name AS course_name,
+            CONCAT(instructor.firstName, ' ', instructor.lastName) AS instructor_name,
+            enrollment.marks
+        FROM 
+            enrollment
+        INNER JOIN 
+            course ON enrollment.course_id = course.id
+        INNER JOIN 
+            instructor ON course.instructor = instructor.id
+        WHERE 
+            enrollment.student_id = ?
+    `;
+
+    try {
+        const [results] = await db.promise().execute(query, [studentId]);
+        res.json(results);
+    } catch (error) {
+        console.error('Error fetching courses:', error.message);
+        res.status(500).send('Error fetching courses');
+    }
+});
+
+
+
+// Fetch books issued by a specific student
+app.get('/students/:id/books', (req, res) => {
+    const studentId = req.params.id;
+    const query = `
+        SELECT 
+            b.title, 
+            b.author, 
+            DATE_FORMAT(ib.date_of_issue, '%Y-%m-%d') AS issue_date,  -- Format the issue date
+            DATE_FORMAT(ib.date_of_return, '%Y-%m-%d') AS return_date -- Format the return date
+        FROM 
+            issued_books ib
+        JOIN 
+            books b ON ib.book_id = b.book_id
+        WHERE 
+            ib.issuer_type = 'student' AND ib.issuer_id = ?;
+    `;
+
+    db.query(query, [studentId], (err, result) => {
+        if (err) {
+            console.error('Error fetching issued books:', err);
+            return res.status(500).json({ error: 'Failed to fetch issued books.' });
+        }
+
+        if (result.length > 0) {
+            res.json(result);
+        } else {
+            res.status(404).json({ message: 'No books issued by this student.' });
+        }
+    });
+});
+
+app.get('/instructors/:id/books', (req, res) => {
+    const instructorId = req.params.id;
+    const query = `
+        SELECT 
+            b.title, 
+            b.author, 
+            DATE_FORMAT(ib.date_of_issue, '%Y-%m-%d') AS issue_date,
+            DATE_FORMAT(ib.date_of_return, '%Y-%m-%d') AS return_date
+        FROM 
+            issued_books ib
+        JOIN 
+            books b ON ib.book_id = b.book_id
+        WHERE 
+            ib.issuer_type = 'faculty' AND ib.issuer_id = ?;
+    `;
+
+    db.query(query, [instructorId], (err, result) => {
+        if (err) {
+            console.error('Error fetching issued books:', err);
+            return res.status(500).json({ error: 'Failed to fetch issued books.' });
+        }
+
+        if (result.length > 0) {
+            res.json(result);
+        } else {
+            res.status(404).json({ message: 'No books issued' });
+        }
+    });
+});
+
+
+// Route to get hostel details for a student including roommates
+app.get('/students/:studentId/hostel', (req, res) => {
+    const studentId = req.params.studentId;
+
+    
+    const roomQuery = `
+        SELECT room_number FROM hostel WHERE student_id = ?
+    `;
+    
+    db.query(roomQuery, [studentId], (err, roomResults) => {
+        if (err) {
+            return res.status(500).json({ error: err.message });
+        }
+        
+        
+        if (roomResults.length === 0) {
+            return res.json({ room_number: null, roommates: [] });
+        }
+
+        const roomNumber = roomResults[0].room_number;
+
+        
+        const roommatesQuery = `
+            SELECT s.id AS student_id, s.firstName, s.lastName
+            FROM hostel h
+            JOIN student s ON h.student_id = s.id
+            WHERE h.room_number = ? AND h.allocation_status = 'allocated'
+        `;
+
+        db.query(roommatesQuery, [roomNumber], (err, roommatesResults) => {
+            if (err) {
+                return res.status(500).json({ error: err.message });
+            }
+
+            res.json({
+                room_number: roomNumber || null,
+                roommates: roommatesResults
+            });
+        });
+    });
+});
+
+// Feedback routes
+app.post('/student-feedback', (req, res) => {
+    const { giver_id, subject, feedback_text } = req.body;
+    const date_posted = new Date().toISOString().split('T')[0]; // Current date
+  
+    const insertQuery = `
+      INSERT INTO student_feedback (giver_id, subject, status, date_posted, feedback_text)
+      VALUES (?, ?, 'unresolved', ?, ?)`;
+  
+    db.query(insertQuery, [giver_id, subject, date_posted, feedback_text], (insertErr) => {
+      if (insertErr) {
+        return res.status(500).json({ error: 'Error inserting student feedback' });
+      }
+      res.status(200).json({ message: 'Student feedback submitted successfully' });
+    });
+  });
+
+  app.post('/faculty-feedback', (req, res) => {
+    const { giver_id, subject, feedback_text } = req.body;
+    const date_posted = new Date().toISOString().split('T')[0]; // Current date
+  
+    const insertQuery = `
+      INSERT INTO faculty_feedback (giver_id, subject, status, date_posted, feedback_text)
+      VALUES (?, ?, 'unresolved', ?, ?)`;
+  
+    db.query(insertQuery, [giver_id, subject, date_posted, feedback_text], (insertErr) => {
+      if (insertErr) {
+        return res.status(500).json({ error: 'Error inserting faculty feedback' });
+      }
+      res.status(200).json({ message: 'Faculty feedback submitted successfully' });
+    });
+});
+
+// Fetch students with marks enrolled in a course
+app.get('/courses/:courseId/students', (req, res) => {
+    const courseId = req.params.courseId;
+    const query = `
+      SELECT s.id, CONCAT(s.firstName, ' ', s.lastName) AS name, e.marks
+      FROM enrollment e
+      JOIN student s ON e.student_id = s.id
+      WHERE e.course_id = ?
+    `;
+    db.query(query, [courseId], (err, results) => {
+      if (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Failed to fetch students' });
+      } else {
+        res.json(results);
+      }
+    });
+});
+
+// Route to update a student's marks
+app.put('/courses/:courseId/students/:studentId/marks', (req, res) => {
+    const { courseId, studentId } = req.params;
+    const { marks } = req.body;
+    const query = `
+      UPDATE enrollment
+      SET marks = ?
+      WHERE course_id = ? AND student_id = ?
+    `;
+    db.query(query, [marks, courseId, studentId], (err, results) => {
+      if (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Failed to update marks' });
+      } else {
+        res.json({ message: 'Marks updated successfully' });
+      }
+    });
+});
+  
+  // Enroll a new student in a course
+  app.post('/courses/:courseId/enroll-student', (req, res) => {
+    const courseId = req.params.courseId;
+    const { studentId } = req.body;
+    const query = `INSERT INTO enrollment (student_id, course_id) VALUES (?, ?)`;
+  
+    db.query(query, [studentId, courseId], (err) => {
+      if (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Failed to enroll student' });
+      } else {
+        res.json({ message: 'Student enrolled successfully' });
+      }
+    });
+  });
+
+// Fetch all courses taught by a specific instructor along with their strength
+app.get('/instructors/:instructorId/courses', (req, res) => {
+    const instructorId = parseInt(req.params.instructorId, 10); // Parse the instructorId to an integer
+    const query = `
+        SELECT 
+            c.id AS course_id,
+            c.name AS course_name,
+            COUNT(e.student_id) AS student_strength 
+        FROM 
+            course c
+        LEFT JOIN 
+            enrollment e ON c.id = e.course_id
+        WHERE 
+            c.instructor = ?
+        GROUP BY 
+            c.id, c.name;
+    `;
+
+    db.query(query, [instructorId], (err, results) => {
+        if (err) {
+            console.error('Error fetching courses:', err);
+            return res.status(500).json({ error: 'Database query failed' });
+        }
+
+        res.json(results);
+    });
+});
+
+
+
+  
+  
+
 
 app.listen(3000, () => {
     console.log('Server running on port 3000');
