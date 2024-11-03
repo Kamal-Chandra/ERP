@@ -461,7 +461,7 @@ app.post('/introduce-fee', (req, res) => {
 app.get('/hostel-stats', (req, res) => {
     const totalQuery = 'SELECT COUNT(*) AS total_students FROM student';
     const hostellersQuery = "SELECT COUNT(*) AS hostellers FROM hostel WHERE allocation_status = 'allocated'";
-    const dayScholarsQuery = "SELECT COUNT(*) AS day_scholars FROM hostel WHERE allocation_status = 'not_allocated'";
+    const dayScholarsQuery = "SELECT COUNT(*) AS day_scholars FROM hostel WHERE allocation_status = 'not allocated'";
   
     db.query(totalQuery, (err, totalResult) => {
       if (err) return res.status(500).json({ error: err.message });
@@ -795,6 +795,110 @@ app.get('/instructors/:instructorId/courses', (req, res) => {
         }
 
         res.json(results);
+    });
+});
+
+// Endpoint to get a student's details, including courses, unpaid fees, issued books, and hostel info
+app.get('/student-details/:id', (req, res) => {
+    const studentId = req.params.id;
+  
+    const studentDetailsQuery = `
+      SELECT s.id, s.firstName, s.lastName, d.name AS department 
+      FROM student s 
+      JOIN department d ON s.department_code = d.code 
+      WHERE s.id = ?;
+    `;
+  
+    const coursesQuery = `
+      SELECT c.name 
+      FROM enrollment e 
+      JOIN course c ON e.course_id = c.id 
+      WHERE e.student_id = ?;
+    `;
+  
+    const unpaidFeesQuery = `
+      SELECT fee_type, due_date, status 
+      FROM fee 
+      WHERE student_id = ? AND status = 'unpaid';
+    `;
+  
+    const issuedBooksQuery = `
+      SELECT b.title, ib.date_of_issue, ib.date_of_return 
+      FROM issued_books ib 
+      JOIN books b ON ib.book_id = b.book_id 
+      WHERE ib.issuer_type = 'student' AND ib.issuer_id = ?;
+    `;
+  
+    const hostelInfoQuery = `
+      SELECT allocation_status, room_number 
+      FROM hostel 
+      WHERE student_id = ?;
+    `;
+  
+    db.query(studentDetailsQuery, [studentId], (err, studentResult) => {
+      if (err) return res.status(500).send(err);
+  
+      if (studentResult.length === 0) return res.status(404).send({ error: 'Student not found' });
+      
+      const studentDetails = studentResult[0];
+      const queries = [
+        new Promise((resolve, reject) => db.query(coursesQuery, [studentId], (err, results) => err ? reject(err) : resolve(results))),
+        new Promise((resolve, reject) => db.query(unpaidFeesQuery, [studentId], (err, results) => err ? reject(err) : resolve(results))),
+        new Promise((resolve, reject) => db.query(issuedBooksQuery, [studentId], (err, results) => err ? reject(err) : resolve(results))),
+        new Promise((resolve, reject) => db.query(hostelInfoQuery, [studentId], (err, results) => err ? reject(err) : resolve(results)))
+      ];
+  
+      Promise.all(queries)
+        .then(([courses, unpaidFees, issuedBooks, hostelInfo]) => {
+          res.send({
+            id: studentDetails.id,
+            name: `${studentDetails.firstName} ${studentDetails.lastName}`,
+            department: studentDetails.department,
+            courses: courses.map(c => c.name),
+            unpaidFees: unpaidFees,
+            issuedBooks: issuedBooks,
+            hostelRoom: hostelInfo.length ? hostelInfo[0] : null
+          });
+        })
+        .catch((error) => res.status(500).send(error));
+    });
+});
+
+// Endpoint to get faculty details by ID
+app.get('/faculty/:id', (req, res) => {
+    const facultyId = req.params.id;
+    const query = `
+        SELECT f.id, f.firstName, f.lastName, d.name AS department, GROUP_CONCAT(c.name SEPARATOR ', ') AS courses
+        FROM instructor AS f
+        LEFT JOIN department AS d ON f.department = d.code
+        LEFT JOIN course AS c ON c.instructor = f.id
+        WHERE f.id = ?
+        GROUP BY f.id, d.name
+    `;
+
+    db.query(query, [facultyId], (error, results) => {
+        if (error) {
+        return res.status(500).json({ error: 'Database query error' });
+        }
+        if (results.length > 0) {
+        // Assuming you have a function to get issued books based on faculty ID
+        const issuedBooksQuery = `SELECT b.title FROM issued_books ib JOIN books b ON ib.book_id = b.book_id WHERE ib.issuer_type = 'faculty' AND ib.issuer_id = ?`;
+        
+        db.query(issuedBooksQuery, [facultyId], (error, booksResults) => {
+            if (error) {
+            return res.status(500).json({ error: 'Database query error' });
+            }
+
+            const facultyDetails = {
+            ...results[0],
+            issuedBooks: booksResults // Include issued books
+            };
+
+            return res.status(200).json(facultyDetails);
+        });
+        } else {
+        return res.status(404).json({ error: 'Faculty not found' });
+        }
     });
 });
 

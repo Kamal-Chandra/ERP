@@ -68,6 +68,11 @@ class FacultyManagement extends StatelessWidget {
                           subtitle: Text('ID: ${faculty['id']}\nDepartment: ${faculty['department']}',
                               style: Theme.of(context).textTheme.titleMedium),
                           trailing: const Icon(Iconsax.profile),
+                          onTap: (){
+                            facultyController.fetchFacultyDetails(faculty['id']).then((details) {
+                              _showFacultyDetailsDialog(context, details);
+                            });
+                          },
                         ),
                       );
                     },
@@ -166,6 +171,78 @@ class FacultyManagement extends StatelessWidget {
   }
 }
 
+void _showFacultyDetailsDialog(BuildContext context, Map<String, dynamic> details) {
+  List<dynamic> courses = details['courses'] != null 
+      ? details['courses'].split(',').map((course) => course.trim()).toList() 
+      : [];
+  String coursesString = courses.isNotEmpty? courses.join('\n'): "None";
+  showDialog(
+    context: context,
+    builder: (context) {
+      return AlertDialog(
+        title: Text(
+          "${details['firstName']} ${details['lastName']}",
+          style: const TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold, color: Colors.lightBlueAccent),
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text.rich(
+                TextSpan(
+                  children: [
+                    const TextSpan(text: "ID: ", style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold, color: Colors.lightBlueAccent)),
+                    TextSpan(text: "${details['id']}", style: const TextStyle(fontSize: 16.0)),
+                  ],
+                ),
+              ),
+              const SizedBox(height: TSizes.sm),
+              Text.rich(
+                TextSpan(
+                  children: [
+                    const TextSpan(text: "Department:\n", style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold, color: Colors.lightBlueAccent)),
+                    TextSpan(text: "${details['department']}", style: const TextStyle(fontSize: 16.0)),
+                  ],
+                ),
+              ),
+              const SizedBox(height: TSizes.sm),
+              const Text(
+                  "Courses:",
+                  style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold, color: Colors.lightBlueAccent),
+                ),
+              Text(coursesString, style: const TextStyle(fontSize: 14.0)),
+              const SizedBox(height: TSizes.sm),
+              const Text(
+                "Issued Books:",
+                style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold, color: Colors.lightBlueAccent),
+              ),
+              details['issuedBooks'] != null && details['issuedBooks'].isNotEmpty
+                  ? Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: details['issuedBooks'].map<Widget>((book) {
+                        return Text(
+                          "${book['title']}",
+                          style: const TextStyle(fontSize: 14.0),
+                        );
+                      }).toList(),
+                    )
+                  : const Text("None", style: TextStyle(fontSize: 14.0)),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(),
+            child: const Text("Close", style: TextStyle(fontSize: 16.0)),
+          ),
+        ],
+      );
+    },
+  );
+}
+
+
 class AdminFacultyController extends GetxController {
   var departments = <Map<String, dynamic>>[].obs;
   var faculty = <Map<String, dynamic>>[].obs;
@@ -218,6 +295,21 @@ class AdminFacultyController extends GetxController {
     } finally {
       isLoading(false);
     }
+  }
+
+  Future<Map<String, dynamic>> fetchFacultyDetails(int id) async {
+    try {
+      final response = await http.get(Uri.parse('http://localhost:3000/faculty/$id'));
+      if (response.statusCode == 200) {
+        // Return the decoded JSON response as a Map
+        return json.decode(response.body) as Map<String, dynamic>;
+      } else {
+        Get.snackbar('Error', 'Failed to load faculty details');
+      }
+    } catch (e) {
+      Get.snackbar('Error', 'Failed to connect to the server');
+    }
+    return {};
   }
 
   Future<void> addFaculty(int id, String firstName, String lastName, String department) async {

@@ -68,6 +68,11 @@ class StudentManagement extends StatelessWidget {
                           subtitle: Text('ID: ${student['id']}\nDepartment: ${student['department_code']}',
                               style: Theme.of(context).textTheme.titleMedium),
                           trailing: const Icon(Iconsax.profile),
+                          onTap: () {
+                            studentController.fetchStudentDetails(student['id']).then((details) {
+                              _showStudentDetailsDialog(context, details);
+                            });
+                          },
                         ),
                       );
                     },
@@ -114,6 +119,104 @@ class StudentManagement extends StatelessWidget {
         },
         child: const Icon(Iconsax.add),
       ),
+    );
+  }
+
+  void _showStudentDetailsDialog(BuildContext context, Map<String, dynamic> details) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(
+            "${details['name']}",
+            style: const TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold, color: Colors.lightBlueAccent),
+          ),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text.rich(
+                  TextSpan(
+                    children: [
+                      const TextSpan(text: "ID: ", style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold, color: Colors.lightBlueAccent)),
+                      TextSpan(text: "${details['id']}", style: const TextStyle(fontSize: 16.0)),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: TSizes.sm),
+                Text.rich(
+                  TextSpan(
+                    children: [
+                      const TextSpan(text: "Department:\n", style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold, color: Colors.lightBlueAccent)),
+                      TextSpan(text: "${details['department']}", style: const TextStyle(fontSize: 16.0)),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: TSizes.sm),
+                const Text(
+                  "Courses:",
+                  style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold, color: Colors.lightBlueAccent),
+                ),
+                details['courses'].isNotEmpty
+                    ? Text(details['courses'].join('\n'), style: const TextStyle(fontSize: 14.0))
+                    : const Text("None", style: TextStyle(fontSize: 14.0)),
+                
+                const SizedBox(height: TSizes.sm),
+                const Text(
+                  "Unpaid Fees:",
+                  style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold, color: Colors.lightBlueAccent),
+                ),
+                details['unpaidFees'] != null && details['unpaidFees'].isNotEmpty
+                    ? Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: details['unpaidFees'].map<Widget>((fee) {
+                          return Text(
+                            "${fee['fee_type']}",
+                            style: const TextStyle(fontSize: 14.0),
+                          );
+                        }).toList(),
+                      )
+                    : const Text("None", style: TextStyle(fontSize: 14.0)),
+                const SizedBox(height: TSizes.sm),
+                const Text(
+                  "Issued Books:",
+                  style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold, color: Colors.lightBlueAccent),
+                ),
+                details['issuedBooks'] != null && details['issuedBooks'].isNotEmpty
+                    ? Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: details['issuedBooks'].map<Widget>((book) {
+                          return Text(
+                            "${book['title']}",
+                            style: const TextStyle(fontSize: 14.0),
+                          );
+                        }).toList(),
+                      )
+                    : const Text("None", style: TextStyle(fontSize: 14.0)),
+                const SizedBox(height: TSizes.sm),
+                Row(
+                  children: [
+                    const Text(
+                      "Hostel Room: ",
+                      style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold, color: Colors.lightBlueAccent),
+                    ),
+                    (details['hostelRoom'] == null || details['hostelRoom']['allocation_status'] == 'not allocated')
+                        ? const Text("Not a Hosteller", style: TextStyle(fontSize: 14.0))
+                        : Text("${details['hostelRoom']['room_number']}", style: const TextStyle(fontSize: 14.0)),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Get.back(),
+              child: const Text("Close", style: TextStyle(fontSize: 16.0)),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -241,5 +344,19 @@ class AdminStudentController extends GetxController {
     } catch (e) {
       Get.snackbar("Error", "Failed to connect to the server");
     }
+  }
+
+  Future<Map<String, dynamic>> fetchStudentDetails(int id) async {
+    try {
+      final response = await http.get(Uri.parse('http://localhost:3000/student-details/$id'));
+      if (response.statusCode == 200) {
+        return json.decode(response.body);
+      } else {
+        Get.snackbar("Error", "Failed to load student details");
+      }
+    } catch (e) {
+      Get.snackbar("Error", "Failed to connect to the server");
+    }
+    return {};
   }
 }
