@@ -66,9 +66,9 @@ class LoginController extends GetxController {
     try {
       final response = await Api.loginAdmin(username, password);
       if (response.statusCode == 200) {
-        final adminId = response.data['adminId'];
+        final adminID = response.data['adminId'].toString();
         showSnackbar('Success', 'Login successful', isSuccess: true);
-        Get.to(() => AdminDashboard(id: adminId));
+        Get.to(() => AdminDashboard(adminId: adminID));
       } else {
         showSnackbar('Error', 'Login failed: ${response.data['message']}');
       }

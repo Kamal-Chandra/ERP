@@ -67,13 +67,61 @@ app.post('/login/admin', (req, res) => {
 
         if (result.length > 0) {
             if (password === result[0].password) {
-                res.json({ message: 'Login successful', instructorId: result[0].instructor_id });
+                res.json({ message: 'Login successful', adminId: result[0].admin_id });
             } else {
                 res.status(401).json({ message: 'Incorrect password' });
             }
         } else {
             res.status(404).json({ message: 'Username not found' });
         }
+    });
+});
+
+// Endpoint to fetch admin details by admin_id
+app.get('/get-admin/:id', (req, res) => {
+    const adminId = req.params.id;
+
+    db.query('SELECT firstName, lastName, email, dob FROM admin WHERE admin_id = ?', [adminId], (error, results) => {
+        if (error) {
+            console.error(error);
+            return res.status(500).send('Server error');
+        }
+
+        if (results.length > 0) {
+            res.json(results[0]);
+        } else {
+            res.status(404).send('Admin not found');
+        }
+    });
+});
+
+app.post('/admission/new', (req, res) => {
+    const { id, firstName, lastName, department_code } = req.body;
+    const query = 'INSERT INTO student (id, firstName, lastName, department_code) VALUES (?, ?, ?, ?)';
+  
+    db.query(query, [id, firstName, lastName, department_code], (err, result) => {
+      if (err) {
+        console.error('Error inserting new student:', err);
+        res.status(500).json({ message: 'Failed to add student' });
+      } else {
+        res.json({ message: 'Student added successfully' });
+      }
+    });
+});  
+
+// Endpoint to add a new faculty member
+app.post('/faculty/new', (req, res) => {
+    const { id, firstName, lastName, department } = req.body;
+    if (!id || !firstName || !lastName || !department) {
+        return res.status(400).json({ message: 'All fields are required.' });
+    }
+    const sql = 'INSERT INTO instructor (id, firstName, lastName, department) VALUES (?, ?, ?, ?)';
+    db.query(sql, [id, firstName, lastName, department], (err, result) => {
+        if (err) {
+            console.error('Error inserting faculty:', err);
+            return res.status(500).json({ message: 'Error adding faculty.' });
+        }
+        res.status(200).json({ message: 'Faculty added successfully!', facultyId: result.insertId });
     });
 });
 
@@ -169,9 +217,7 @@ app.get('/departments-with-students', (req, res) => {
     const query = `
         SELECT d.name AS department_name, COUNT(s.id) AS student_count
         FROM department d
-        LEFT JOIN course c ON d.code = c.department
-        LEFT JOIN enrollment e ON c.id = e.course_id
-        LEFT JOIN student s ON e.student_id = s.id
+        LEFT JOIN student s ON d.code = s.department_code
         GROUP BY d.name;
     `;
 
@@ -181,10 +227,9 @@ app.get('/departments-with-students', (req, res) => {
     });
 });
 
-
 // Search Students
 app.get('/search-students', (req, res) => {
-    const searchQuery = req.query.query || ''; // Optional query
+    const searchQuery = req.query.query || '';
     const query = `
         SELECT id, firstName, lastName, department_code
         FROM student
@@ -211,7 +256,6 @@ app.get('/search-students', (req, res) => {
         }
     });
 });
-
 
 // Fetch departments with faculty count
 app.get('/departments-with-faculty', (req, res) => {
@@ -412,6 +456,80 @@ app.post('/introduce-fee', (req, res) => {
         });
     });
   });
+
+// Endpoint to get hostel statistics
+app.get('/hostel-stats', (req, res) => {
+    const totalQuery = 'SELECT COUNT(*) AS total_students FROM student';
+    const hostellersQuery = "SELECT COUNT(*) AS hostellers FROM hostel WHERE allocation_status = 'allocated'";
+    const dayScholarsQuery = "SELECT COUNT(*) AS day_scholars FROM hostel WHERE allocation_status = 'not_allocated'";
+  
+    db.query(totalQuery, (err, totalResult) => {
+      if (err) return res.status(500).json({ error: err.message });
+  
+      db.query(hostellersQuery, (err, hostellersResult) => {
+        if (err) return res.status(500).json({ error: err.message });
+  
+        db.query(dayScholarsQuery, (err, dayScholarsResult) => {
+          if (err) return res.status(500).json({ error: err.message });
+  
+          res.json({
+            total_students: totalResult[0].total_students,
+            hostellers: hostellersResult[0].hostellers,
+            day_scholars: dayScholarsResult[0].day_scholars,
+          });
+        });
+      });
+    });
+});
+  
+// Endpoint to get students with hostel info
+app.get('/students-with-hostel-info', (req, res) => {
+    const query = `
+        SELECT s.id, s.firstName, s.lastName, h.room_number, h.allocation_status 
+        FROM student s
+        LEFT JOIN hostel h ON s.id = h.student_id
+    `;
+    db.query(query, (err, results) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json(results);
+    });
+});
+
+// Endpoint to search students by name, room number, ID, or allocation status
+app.get('/search-hostel-students', (req, res) => {
+    const query = req.query.query.trim();
+
+    const searchQuery = `
+        SELECT s.id, s.firstName, s.lastName, h.room_number, h.allocation_status 
+        FROM student s
+        LEFT JOIN hostel h ON s.id = h.student_id
+        WHERE LOWER(s.firstName) LIKE LOWER(?) 
+           OR LOWER(s.lastName) LIKE LOWER(?) 
+           OR h.room_number = ? 
+           OR s.id = ? 
+           OR LOWER(h.allocation_status) = LOWER(?)
+           OR LOWER(REPLACE(h.allocation_status, '_', ' ')) = LOWER(?)
+    `;
+    
+    db.query(searchQuery, [`%${query}%`, `%${query}%`, query, query, query, query], (err, results) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json(results);
+    });
+});
+
+// Endpoint to allocate a room to a student
+app.post('/allocate-room', (req, res) => {
+    const { student_id, room_number } = req.body;
+    const updateQuery = `
+        INSERT INTO hostel (student_id, allocation_status, room_number)
+        VALUES (?, 'allocated', ?)
+        ON DUPLICATE KEY UPDATE allocation_status = 'allocated', room_number = ?
+    `;
+    db.query(updateQuery, [student_id, room_number, room_number], (err, result) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json({ message: 'Room allocated successfully' });
+    });
+});  
 
 // Endpoint to get unpaid fees details for a specific student
 app.get('/unpaid-fees/details/:studentId', (req, res) => {

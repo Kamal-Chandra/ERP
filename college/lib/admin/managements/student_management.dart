@@ -1,10 +1,10 @@
-import 'package:college/utils/constants/colors.dart';
-import 'package:college/utils/constants/sizes.dart';
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:college/utils/constants/sizes.dart';
+import 'package:college/utils/constants/colors.dart';
 
 class StudentManagement extends StatelessWidget {
   const StudentManagement({super.key});
@@ -20,17 +20,27 @@ class StudentManagement extends StatelessWidget {
         child: Column(
           children: [
             // Search Bar
-            TextField(
-              onChanged: (query) {
-                studentController.searchStudents(query);
-              },
-              decoration: InputDecoration(
-                labelText: 'Search Students',
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8.0)),
-                suffixIcon: IconButton(icon: const Icon(Iconsax.search_normal), onPressed: () {}),
-              ),
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    onChanged: (query) {
+                      studentController.searchStudents(query);
+                    },
+                    decoration: InputDecoration(
+                      labelText: 'Search Students',
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8.0)),
+                      suffixIcon: IconButton(icon: const Icon(Iconsax.search_normal), onPressed: () {}),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: TSizes.md),
+                IconButton(
+                  icon: const Icon(Iconsax.refresh, color: Colors.white),
+                  onPressed: ()=>studentController.fetchDepartments(),
+                ),
+              ],
             ),
-            const SizedBox(height: 20),
 
             // Display Departments or Search Results
             Expanded(
@@ -68,32 +78,89 @@ class StudentManagement extends StatelessWidget {
                   return const Center(child: Text('No departments found.'));
                 }
 
-                return GridView.builder(
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 3,
-                    childAspectRatio: 3.5,
-                    crossAxisSpacing: 8.0,
-                    mainAxisSpacing: 8.0,
+                return Padding(
+                  padding: const EdgeInsets.only(top: TSizes.md),
+                  child: GridView.builder(
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 3,
+                      childAspectRatio: 3.5,
+                      crossAxisSpacing: 8.0,
+                      mainAxisSpacing: 2.0,
+                    ),
+                    itemCount: studentController.departments.length,
+                    itemBuilder: (context, index) {
+                      final department = studentController.departments[index];
+                      return Card(
+                        margin: const EdgeInsets.symmetric(vertical: TSizes.sm),
+                        child: ListTile(
+                          title: Text(department['department_name'], style: Theme.of(context).textTheme.titleLarge),
+                          subtitle: Text('Students: ${department['student_count']}', style: Theme.of(context).textTheme.titleMedium),
+                          trailing: const Icon(Iconsax.graph),
+                          onTap: () {},
+                        ),
+                      );
+                    },
                   ),
-                  itemCount: studentController.departments.length,
-                  itemBuilder: (context, index) {
-                    final department = studentController.departments[index];
-                    return Card(
-                      margin: const EdgeInsets.symmetric(vertical: TSizes.sm),
-                      child: ListTile(
-                        title: Text(department['department_name'], style: Theme.of(context).textTheme.titleLarge),
-                        subtitle: Text('Students: ${department['student_count']}', style: Theme.of(context).textTheme.titleMedium),
-                        trailing: const Icon(Iconsax.graph),
-                        onTap: () {},
-                      ),
-                    );
-                  },
                 );
               }),
             ),
           ],
         ),
       ),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: TColors.primary,
+        onPressed: () {
+          _showNewStudentDialog(context, studentController);
+        },
+        child: const Icon(Iconsax.add),
+      ),
+    );
+  }
+
+  void _showNewStudentDialog(BuildContext context, AdminStudentController studentController) {
+    final idController = TextEditingController();
+    final firstNameController = TextEditingController();
+    final lastNameController = TextEditingController();
+    final departmentCodeController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("New Admission"),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(controller: idController, decoration: const InputDecoration(labelText: "ID")),
+              const SizedBox(height: TSizes.sm),
+              TextField(controller: firstNameController, decoration: const InputDecoration(labelText: "First Name")),
+              const SizedBox(height: TSizes.sm),
+              TextField(controller: lastNameController, decoration: const InputDecoration(labelText: "Last Name")),
+              const SizedBox(height: TSizes.sm),
+              TextField(controller: departmentCodeController, decoration: const InputDecoration(labelText: "Department Code")),
+              const SizedBox(height: TSizes.sm),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Get.back(),
+              child: const Text("Cancel"),
+            ),
+            TextButton(
+              onPressed: () {
+                studentController.addStudent(
+                  int.parse(idController.text),
+                  firstNameController.text,
+                  lastNameController.text,
+                  departmentCodeController.text,
+                );
+                Get.back();
+              },
+              child: const Text("Submit"),
+            ),
+          ],
+        );
+      },
     );
   }
 }
@@ -112,6 +179,7 @@ class AdminStudentController extends GetxController {
 
   // Fetch department data
   Future<void> fetchDepartments() async {
+    isLoading(true);
     try {
       final response = await http.get(Uri.parse('http://localhost:3000/departments-with-students'));
       if (response.statusCode == 200) {
@@ -148,6 +216,30 @@ class AdminStudentController extends GetxController {
       Get.snackbar('Error', 'Failed to connect to the server');
     } finally {
       isLoading(false);
+    }
+  }
+
+  Future<void> addStudent(int id, String firstName, String lastName, String departmentCode) async {
+    try {
+      final response = await http.post(
+        Uri.parse('http://localhost:3000/admission/new'),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({
+          "id": id,
+          "firstName": firstName,
+          "lastName": lastName,
+          "department_code": departmentCode,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        Get.snackbar("Success", "Student added successfully");
+        fetchDepartments();
+      } else {
+        Get.snackbar("Error", "Failed to add student");
+      }
+    } catch (e) {
+      Get.snackbar("Error", "Failed to connect to the server");
     }
   }
 }
