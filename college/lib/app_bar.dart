@@ -13,7 +13,7 @@ class TAppBar extends StatelessWidget implements PreferredSizeWidget {
     this.showBackArrow = false,
     this.leadingIcon,
     this.actions,
-    this.color=TColors.primary,
+    this.color = TColors.primary,
     this.leadingOnPressed,
   });
 
@@ -28,16 +28,25 @@ class TAppBar extends StatelessWidget implements PreferredSizeWidget {
   Widget build(BuildContext context) {
     final dark = HelperFunctions.isDarkMode(context);
     final titleStyle = dark
-        ? Theme.of(context).textTheme.headlineMedium?.copyWith(color: Colors.white)
-        : Theme.of(context).textTheme.headlineMedium?.copyWith(color: Colors.black);
+        ? Theme.of(context)
+            .textTheme
+            .headlineMedium
+            ?.copyWith(color: Colors.white)
+        : Theme.of(context)
+            .textTheme
+            .headlineMedium
+            ?.copyWith(color: Colors.black);
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: TSizes.md),
       child: AppBar(
         automaticallyImplyLeading: false,
         leading: showBackArrow
-            ? IconButton(onPressed: () => Get.back(), icon: Icon(Iconsax.arrow_left, color: color))
+            ? IconButton(
+                onPressed: () => Get.back(),
+                icon: Icon(Iconsax.arrow_left, color: color))
             : leadingIcon != null
-                ? IconButton(onPressed: leadingOnPressed, icon: Icon(leadingIcon))
+                ? IconButton(
+                    onPressed: leadingOnPressed, icon: Icon(leadingIcon))
                 : null,
         title: title != null
             ? DefaultTextStyle(

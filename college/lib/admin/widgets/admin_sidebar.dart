@@ -29,24 +29,64 @@ class AdminSideBar extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                IconButton(icon: const Icon(Iconsax.user_tick, size: 60, color: Colors.white), onPressed: (){}),
+                IconButton(
+                    icon: const Icon(Iconsax.user_tick,
+                        size: 60, color: Colors.white),
+                    onPressed: () {}),
                 const SizedBox(height: 10),
-    
+
                 // Admin Name and Email
-                Text(adminName??'No Name', style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
-                Text(adminEmail??'No Email', style: const TextStyle(color: Colors.white70, fontSize: 14)),
+                Text(adminName ?? 'No Name',
+                    style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold)),
+                Text(adminEmail ?? 'No Email',
+                    style:
+                        const TextStyle(color: Colors.white70, fontSize: 14)),
               ],
             ),
           ),
-          SidebarTile(icon: Iconsax.chart_square, title: 'Dashboard', onTap: ()=>dashboardController.setCurrentView('Dashboard')),
-          SidebarTile(icon: Iconsax.user, title: 'Student', onTap: ()=>dashboardController.setCurrentView('Student')),
-          SidebarTile(icon: Iconsax.teacher, title: 'Faculty', onTap: ()=>dashboardController.setCurrentView('Faculty')),
-          SidebarTile(icon: Iconsax.card, title: 'Fees', onTap: ()=>dashboardController.setCurrentView('Fees')),
-          SidebarTile(icon: Iconsax.book, title: 'Library', onTap: ()=>dashboardController.setCurrentView('Library')),
-          SidebarTile(icon: Iconsax.house, title: 'Hostel', onTap: ()=>dashboardController.setCurrentView('Hostel')),
-          SidebarTile(icon: Iconsax.message_question, title: 'Feedback', onTap: ()=>dashboardController.setCurrentView('Feedback')),
-          SidebarTile(icon: Iconsax.briefcase, title: 'Placements', onTap: (){dashboardController.setCurrentView('Placements');}),
-          SidebarTile(icon: Iconsax.user_octagon, title: 'Alumni Network', onTap: (){}),
+          SidebarTile(
+              icon: Iconsax.chart_square,
+              title: 'Dashboard',
+              onTap: () => dashboardController.setCurrentView('Dashboard')),
+          SidebarTile(
+              icon: Iconsax.user,
+              title: 'Student',
+              onTap: () => dashboardController.setCurrentView('Student')),
+          SidebarTile(
+              icon: Iconsax.teacher,
+              title: 'Faculty',
+              onTap: () => dashboardController.setCurrentView('Faculty')),
+          SidebarTile(
+              icon: Iconsax.card,
+              title: 'Fees',
+              onTap: () => dashboardController.setCurrentView('Fees')),
+          SidebarTile(
+              icon: Iconsax.book,
+              title: 'Library',
+              onTap: () => dashboardController.setCurrentView('Library')),
+          SidebarTile(
+              icon: Iconsax.house,
+              title: 'Hostel',
+              onTap: () => dashboardController.setCurrentView('Hostel')),
+          SidebarTile(
+              icon: Iconsax.message_question,
+              title: 'Feedback',
+              onTap: () => dashboardController.setCurrentView('Feedback')),
+          SidebarTile(
+              icon: Iconsax.briefcase,
+              title: 'Placements',
+              onTap: () {
+                dashboardController.setCurrentView('Placements');
+              }),
+          SidebarTile(
+              icon: Iconsax.user_octagon,
+              title: 'Alumni Network',
+              onTap: () {
+                dashboardController.setCurrentView('Alumni');
+              }),
         ],
       ),
     );

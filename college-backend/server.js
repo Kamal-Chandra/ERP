@@ -801,6 +801,63 @@ app.get('/instructors/:instructorId/courses', (req, res) => {
 });
 
 
+// Alumini routes
+
+// Endpoint to get all alumni data
+app.get('/api/alumni', (req, res) => {
+    db.query('SELECT * FROM alumni', (err, results) => {
+      if (err) {
+        return res.status(500).send(err);
+      }
+      res.json(results);
+    });
+  });
+  
+  // Endpoint to add a new alumni
+  app.post('/api/alumni', (req, res) => {
+    const { name, graduationYear, currentCompany, contactNumber, email } = req.body;
+    db.query('INSERT INTO alumni (name, graduationYear, currentCompany, contactNumber, email) VALUES (?, ?, ?, ?, ?)', [name, graduationYear, currentCompany, contactNumber, email], (err, result) => {
+      if (err) {
+        return res.status(500).send(err);
+      }
+      res.status(201).send({ id: result.insertId, name, graduationYear, currentCompany, contactNumber, email });
+    });
+  });
+  
+  // Endpoint to update an alumni's information
+  app.put('/api/alumni/:id', (req, res) => {
+    const { id } = req.params;
+    const { name, graduationYear, currentCompany, contactNumber, email } = req.body;
+    db.query('UPDATE alumni SET name = ?, graduationYear = ?, currentCompany = ?, contactNumber = ?, email = ? WHERE id = ?', [name, graduationYear, currentCompany, contactNumber, email, id], (err) => {
+      if (err) {
+        return res.status(500).send(err);
+      }
+      res.send({ id, name, graduationYear, currentCompany, contactNumber, email });
+    });
+  });
+  
+  // Endpoint to delete an alumni
+  app.delete('/api/alumni/:id', (req, res) => {
+    const { id } = req.params;
+    db.query('DELETE FROM alumni WHERE id = ?', [id], (err) => {
+      if (err) {
+        return res.status(500).send(err);
+      }
+      res.sendStatus(204);
+    });
+  });
+
+
+  //Placement routes
+
+  const companyRoutes = require('./routes/companyRoutes');
+const applicationRoutes = require('./routes/applicationRoutes');
+
+// Use routes
+app.use('/companies', companyRoutes);
+app.use('/apply', applicationRoutes);
+
+
 
   
   
