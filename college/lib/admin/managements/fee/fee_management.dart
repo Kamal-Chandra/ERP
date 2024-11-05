@@ -136,7 +136,7 @@ class FeeManagement extends StatelessWidget {
                   itemCount: feeController.students.length,
                   itemBuilder: (context, index) {
                     final student = feeController.students[index];
-                    Color cardColor = student['status'] == 'paid' ? Colors.greenAccent : Colors.redAccent;
+                    Color cardColor = student['status'] == 'paid' ? const Color(0xFF98FB98) : const Color(0xFFF08080);
 
                     return Card(
                       margin: const EdgeInsets.symmetric(vertical: 8.0),

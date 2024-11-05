@@ -1,19 +1,20 @@
 import 'dart:convert';
 import 'package:get/get.dart';
+import 'widgets/admin_sidebar.dart';
 import 'package:college/app_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'managements/admin_feedback.dart';
 import 'managements/admin_placement.dart';
-import 'managements/hostel/hostel_management.dart';
-import 'managements/faculty_management.dart';
 import 'managements/student_management.dart';
-import 'managements/library_management.dart';
+import 'managements/faculty_management.dart';
 import 'managements/fee/fee_management.dart';
-import 'package:college/admin/widgets/admin_sidebar.dart';
+import 'managements/library_management.dart';
+import 'managements/hostel/hostel_management.dart';
+import 'package:college/admin/managements/website/website_management.dart';
 
 class AdminDashboardController extends GetxController {
-  var currentView = 'Dashboard'.obs;
+  var currentView = 'Website'.obs;
   var adminName = ''.obs;
   var adminEmail = ''.obs;
 
@@ -65,8 +66,8 @@ class AdminDashboard extends StatelessWidget {
           Expanded(
             child: Obx(() {
               switch (dashboardController.currentView.value) {
-                case 'Dashboard':
-                  return const StudentManagement();
+                case 'Website':
+                  return WebsiteManagement();
                 case 'Student':
                   return const StudentManagement();
                 case 'Faculty':

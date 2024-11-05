@@ -1,3 +1,4 @@
+import 'package:college/utils/constants/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:college/student/student_controller.dart';
@@ -7,6 +8,7 @@ import 'package:college/student/exam_schedule_page.dart';
 import 'package:college/student/library_page.dart';
 import 'package:college/student/hostel_page.dart';
 import 'package:college/student/feedback_page.dart';
+import 'package:iconsax/iconsax.dart';
 
 class StudentDashboard extends StatefulWidget {
   final int id;
@@ -55,7 +57,7 @@ class _StudentDashboardState extends State<StudentDashboard> {
                 CircleAvatar(
                   radius: 40,
                   backgroundColor: Colors.grey[700],
-                  child: Icon(Icons.person, size: 40, color: Colors.white),
+                  child: const Icon(Iconsax.user, size: 40, color: Colors.white),
                 ),
 
                 const SizedBox(height: 16),
@@ -64,7 +66,7 @@ class _StudentDashboardState extends State<StudentDashboard> {
                   return Column(
                     children: [
                       Text(
-                        'Name: ${studentController.studentName.value}',
+                        studentController.studentName.value,
                         style:
                             const TextStyle(color: Colors.white, fontSize: 20),
                       ),
@@ -74,18 +76,17 @@ class _StudentDashboardState extends State<StudentDashboard> {
                         style:
                             const TextStyle(color: Colors.white, fontSize: 18),
                       ),
-                      const Divider(color: Colors.grey),
                     ],
                   );
                 }),
 
                 // Sidebar options
-                _buildSidebarItem("Courses", Icons.book, 0),
-                _buildSidebarItem("Fees", Icons.money, 1),
-                _buildSidebarItem("Exam Schedule", Icons.schedule, 2),
-                _buildSidebarItem("Library", Icons.library_books, 3),
-                _buildSidebarItem("Hostel", Icons.home, 4),
-                _buildSidebarItem("Feedback", Icons.feedback, 5),
+                _buildSidebarItem("Courses", Iconsax.bookmark, 0),
+                _buildSidebarItem("Fees", Iconsax.card, 1),
+                _buildSidebarItem("Exam Schedule", Iconsax.calendar, 2),
+                _buildSidebarItem("Library", Iconsax.book, 3),
+                _buildSidebarItem("Hostel", Iconsax.house, 4),
+                _buildSidebarItem("Feedback", Iconsax.message_question, 5),
               ],
             ),
           ),
@@ -102,8 +103,9 @@ class _StudentDashboardState extends State<StudentDashboard> {
 
   Widget _buildSidebarItem(String title, IconData icon, int index) {
     return ListTile(
-      leading: Icon(icon, color: Colors.white),
-      title: Text(title, style: const TextStyle(color: Colors.white)),
+      hoverColor: TColors.primary,
+      leading: Icon(icon, color: Colors.lightBlueAccent),
+      title: Text(title, style: Theme.of(context).textTheme.titleLarge),
       selected: selectedIndex == index,
       selectedTileColor: Colors.grey[700],
       onTap: () {

@@ -14,6 +14,7 @@ const db = mysql.createConnection({
     database: 'college'
 });
 
+
 db.connect((err) => {
     if (err) throw err;
     console.log('Connected to the database');
@@ -517,19 +518,19 @@ app.get('/search-hostel-students', (req, res) => {
     });
 });
 
-// Endpoint to allocate a room to a student
+// Endpoint to allocate or deallocate a room to a student
 app.post('/allocate-room', (req, res) => {
-    const { student_id, room_number } = req.body;
+    const { student_id, allocation_status, room_number } = req.body;
     const updateQuery = `
         INSERT INTO hostel (student_id, allocation_status, room_number)
-        VALUES (?, 'allocated', ?)
-        ON DUPLICATE KEY UPDATE allocation_status = 'allocated', room_number = ?
+        VALUES (?, ?, ?)
+        ON DUPLICATE KEY UPDATE allocation_status = ?, room_number = ?
     `;
-    db.query(updateQuery, [student_id, room_number, room_number], (err, result) => {
+    db.query(updateQuery, [student_id, allocation_status, room_number, allocation_status, room_number], (err, result) => {
         if (err) return res.status(500).json({ error: err.message });
-        res.json({ message: 'Room allocated successfully' });
+        res.json({ message: 'Room allocation status updated successfully' });
     });
-});  
+}); 
 
 // Endpoint to get unpaid fees details for a specific student
 app.get('/unpaid-fees/details/:studentId', (req, res) => {
@@ -891,7 +892,7 @@ app.get('/faculty/:id', (req, res) => {
 
             const facultyDetails = {
             ...results[0],
-            issuedBooks: booksResults // Include issued books
+            issuedBooks: booksResults
             };
 
             return res.status(200).json(facultyDetails);
@@ -899,6 +900,120 @@ app.get('/faculty/:id', (req, res) => {
         } else {
         return res.status(404).json({ error: 'Faculty not found' });
         }
+    });
+});
+
+// Endpoint to get all notices
+app.get('/notices', (req, res) => {
+    const query = 'SELECT * FROM notice ORDER BY date DESC, time DESC';
+    db.query(query, (err, results) => {
+      if (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Failed to fetch notices' });
+      } else {
+        res.status(200).json(results);
+      }
+    });
+});
+
+// Endpoint to save a notice
+app.post('/add-notice', (req, res) => {
+    const { title, text, type, priority, attachment } = req.body;
+    const date = new Date().toISOString().slice(0, 10);
+    const time = new Date().toLocaleTimeString('en-US', { hour12: false });
+    const query = `INSERT INTO notice (date, time, title, notice_text, notice_type, priority, attachments)
+                   VALUES (?, ?, ?, ?, ?, ?, ?)`;
+  
+    db.query(query, [date, time, title, text, type, priority, attachment], (err, result) => {
+      if (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Failed to save notice' });
+      } else {
+        res.status(200).json({ message: 'Notice saved successfully' });
+      }
+    });
+});
+
+// Endpoint to delete a notice by its ID
+app.delete('/delete-notice/:id', (req, res) => {
+    const noticeId = req.params.id;
+    const query = `DELETE FROM notice WHERE notice_id = ?`;
+    db.query(query, [noticeId], (err, result) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).json({ message: 'Failed to delete notice' });
+        }
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ message: 'Notice not found' });
+        }
+        res.status(200).json({ message: 'Notice deleted successfully' });
+    });
+});
+
+// Endpoint to fetch all tickers
+app.get('/tickers', (req, res) => {
+    db.query('SELECT * FROM ticker', (err, results) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json(results);
+    });
+});
+
+// Endpoint to add a new ticker
+app.post('/add-ticker', (req, res) => {
+    const { message } = req.body;
+    if (!message) {
+        return res.status(400).json({ error: 'Ticker message is required' });
+    }
+
+    db.query('INSERT INTO ticker (message) VALUES (?)', [message], (err, result) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.status(200).json({ id: result.insertId, message });
+    });
+});
+
+// Endpoint to delete a ticker by ID
+app.delete('/delete-ticker/:id', (req, res) => {
+    const tickerId = parseInt(req.params.id);
+    db.query('DELETE FROM ticker WHERE ticker_id = ?', [tickerId], (err, result) => {
+        if (err) return res.status(500).json({ error: err.message });
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: 'Ticker not found' });
+        }
+        res.status(200).json({ message: 'Ticker deleted successfully' });
+    });
+});
+
+// Endpoint to fetch all videos
+app.get('/videos', (req, res) => {
+    db.query('SELECT * FROM video', (err, results) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json(results);
+    });
+});
+
+// Endpoint to add a new video
+app.post('/add-video', async (req, res) => {
+    const { title, url } = req.body;
+    if (!title || !url) {
+        return res.status(400).json({ error: 'Title and URL cannot be empty' });
+    }
+    db.query('INSERT INTO video (title, url) VALUES (?, ?)', [title, url], (err, result) => {
+        if (err) return res.status(500).json({ error: err.message });
+        const message = 'Video added successfully'; // Define the message here
+        res.status(200).json({ id: result.insertId, message });
+    });
+});
+
+// Endpoint to delete a video by ID
+app.delete('/delete-video/:videoId', async (req, res) => {
+    const videoId = parseInt(req.params.videoId, 10);
+
+    db.query('DELETE FROM video WHERE id = ?', [videoId], (err, result) => {
+        if (err) return res.status(500).json({ error: err.message });
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: 'Ticker not found' });
+        }
+        res.status(200).json({ message: 'Ticker deleted successfully' });
     });
 });
 

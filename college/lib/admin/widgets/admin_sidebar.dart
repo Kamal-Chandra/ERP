@@ -38,7 +38,7 @@ class AdminSideBar extends StatelessWidget {
               ],
             ),
           ),
-          SidebarTile(icon: Iconsax.chart_square, title: 'Dashboard', onTap: ()=>dashboardController.setCurrentView('Dashboard')),
+          SidebarTile(icon: Iconsax.global, title: 'Website', onTap: ()=>dashboardController.setCurrentView('Website')),
           SidebarTile(icon: Iconsax.user, title: 'Student', onTap: ()=>dashboardController.setCurrentView('Student')),
           SidebarTile(icon: Iconsax.teacher, title: 'Faculty', onTap: ()=>dashboardController.setCurrentView('Faculty')),
           SidebarTile(icon: Iconsax.card, title: 'Fees', onTap: ()=>dashboardController.setCurrentView('Fees')),

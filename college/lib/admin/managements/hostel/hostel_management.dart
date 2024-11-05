@@ -83,8 +83,8 @@ class HostelManagement extends StatelessWidget {
                   itemBuilder: (context, index) {
                     final student = hostelController.students[index];
                     Color cardColor = student['allocation_status'] == 'allocated'
-                        ? Colors.lightBlueAccent
-                        : Colors.yellowAccent;
+                        ? const Color(0xFFADD8E6)
+                        : const Color(0xFFFFE27B);
 
                     return Card(
                       margin: const EdgeInsets.symmetric(vertical: 8.0),
@@ -99,8 +99,14 @@ class HostelManagement extends StatelessWidget {
                           style: Theme.of(context).textTheme.titleMedium?.copyWith(color: Colors.black),
                         ),
                         trailing: IconButton(
-                          icon: const Icon(Iconsax.add, color: TColors.primary),
-                          onPressed: () => _showAllocateRoomDialog(context, student['id']),
+                          icon: Icon(student['allocation_status']=='allocated'?Iconsax.minus:Iconsax.add, color: TColors.primary),
+                          onPressed: (){
+                            if (student['allocation_status'] == 'allocated') {
+                              _showDeallocateRoomDialog(context, student['id']);
+                            } else {
+                              _showAllocateRoomDialog(context, student['id']);
+                            }
+                          }
                         ),
                       ),
                     );
@@ -135,6 +141,29 @@ class HostelManagement extends StatelessWidget {
       ),
     );
   }
+
+  void _showDeallocateRoomDialog(BuildContext context, int studentId) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Deallocate Room'),
+          content: const Text('Are you sure you want to deallocate this room?'),
+          actions: [
+            TextButton(onPressed: () => Get.back(), child: const Text('Cancel')),
+            TextButton(
+              onPressed: () {
+                Get.back();
+                hostelController.deallocateRoom(studentId);
+              },
+              child: const Text('Yes, Deallocate'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
 
   void _showAllocateRoomDialog(BuildContext context, int studentId) {
     final TextEditingController roomNumberController = TextEditingController();

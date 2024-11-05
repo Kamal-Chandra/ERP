@@ -1,3 +1,4 @@
+import 'package:college/login/login.dart';
 import 'package:college/utils/constants/colors.dart';
 import 'package:college/utils/constants/sizes.dart';
 import 'package:college/utils/device/device_utility.dart';
@@ -35,7 +36,7 @@ class TAppBar extends StatelessWidget implements PreferredSizeWidget {
       child: AppBar(
         automaticallyImplyLeading: false,
         leading: showBackArrow
-            ? IconButton(onPressed: () => Get.back(), icon: Icon(Iconsax.arrow_left, color: color))
+            ? IconButton(onPressed: () => Get.to(()=>const LoginScreen()), icon: Icon(Iconsax.logout, color: color))
             : leadingIcon != null
                 ? IconButton(onPressed: leadingOnPressed, icon: Icon(leadingIcon))
                 : null,

@@ -73,7 +73,7 @@ class HostelController extends GetxController {
     try {
       final response = await http.post(
         Uri.parse('http://localhost:3000/allocate-room'),
-        body: json.encode({'student_id': studentId, 'room_number': roomNumber}),
+        body: json.encode({'student_id': studentId, 'allocation_status': 'allocated', 'room_number': roomNumber}),
         headers: {'Content-Type': 'application/json'},
       );
       if (response.statusCode == 200) {
@@ -85,6 +85,25 @@ class HostelController extends GetxController {
       }
     } catch (e) {
       Get.snackbar('Error', 'Failed to connect to the server');
+    }
+  }
+
+  Future<void> deallocateRoom(int studentId) async {
+    try {
+      final response = await http.post(
+        Uri.parse('http://localhost:3000/allocate-room'),
+        body: json.encode({'student_id': studentId, 'allocation_status': 'not allocated', 'room_number': null}),
+        headers: {'Content-Type': 'application/json'},
+      );
+      if (response.statusCode == 200) {
+        fetchStudents();
+        fetchHostelStatistics();
+        Get.snackbar('Success', 'Room deallocated successfully');
+      } else {
+        Get.snackbar('Error', 'Failed to deallocate room');
+      }
+    } catch (error) {
+      Get.snackbar('Error', 'An error occurred while deallocating room: $error');
     }
   }
 }
