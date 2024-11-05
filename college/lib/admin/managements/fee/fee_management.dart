@@ -151,8 +151,8 @@ class FeeManagement extends StatelessWidget {
                           style: Theme.of(context).textTheme.titleMedium?.copyWith(color: Colors.black),
                         ),
                         trailing: IconButton(
-                          icon: const Icon(Iconsax.tick_circle, color: TColors.primary),
-                          onPressed: () => _showTransactionDialog(context, student['id']),
+                          icon: student['status']!='paid'? const Icon(Iconsax.tick_circle, color: TColors.primary): const SizedBox.shrink(),
+                          onPressed: student['status']!='paid'?() => _showTransactionDialog(context, student['id']):null,
                         ),
                       ),
                     );

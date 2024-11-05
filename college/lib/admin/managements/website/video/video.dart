@@ -1,5 +1,5 @@
 class Video {
-  final int id; // Match with backend field
+  final int id;
   final String title;
   final String url;
 

@@ -1,8 +1,7 @@
 import 'slider.dart';
-import 'dart:typed_data';
+import 'dart:convert';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
-import 'dart:convert';
 
 class SliderController extends GetxController {
   var isLoading = false.obs;
@@ -14,38 +13,32 @@ class SliderController extends GetxController {
     fetchSliders();
   }
 
-  Future<bool> addSlider({
-    required String title,
-    required String description,
-    required Uint8List imageData,
-  }) async {
-    if (title.isEmpty || description.isEmpty) {
-      Get.snackbar('Error', 'Title and description cannot be empty');
+  Future<bool> addSlider(String title, String url) async {
+    if (title.isEmpty || url.isEmpty) {
+      Get.snackbar('Error', 'Title and URL cannot be empty');
       return false;
     }
+
+    final sliderUrl = Uri.parse('http://localhost:3000/add-slider');
+
     try {
       isLoading.value = true;
-
       final response = await http.post(
-        Uri.parse('http://localhost:3000/sliders'), // Ensure this is the correct URL
+        sliderUrl,
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'title': title, // No need for utf8.encode here as jsonEncode handles it
-          'description': description,
-          'imageData': base64Encode(imageData) // Image data as Base64
-        }),
+        body: jsonEncode({'title': title, 'url': url}),
       );
 
-      if (response.statusCode == 201) {
-        Get.snackbar('Success', 'Slider saved successfully');
-        fetchSliders(); // Fetch updated list of sliders
+      if (response.statusCode == 200) {
+        Get.snackbar('Success', 'Slider added successfully');
+        fetchSliders();
         return true;
       } else {
-        Get.snackbar('Error', 'Failed to save slider: ${response.body}');
+        Get.snackbar('Error', 'Failed to add slider: ${response.body}');
         return false;
       }
     } catch (e) {
-      Get.snackbar('Error', 'An error occurred while saving the slider: $e');
+      Get.snackbar('Error', 'An error occurred while adding the slider');
       return false;
     } finally {
       isLoading.value = false;
@@ -56,21 +49,14 @@ class SliderController extends GetxController {
     isLoading.value = true;
     try {
       final response = await http.get(Uri.parse('http://localhost:3000/sliders'));
-
       if (response.statusCode == 200) {
-        List<dynamic> data = jsonDecode(response.body);
-        sliders.value = data.map((item) => Slider(
-          sliderId: item['slider_id'],
-          imageData: base64Decode(item['image_data']), // Decode Base64 image data
-          title: item['title'], // Assuming title is received in a proper format
-          description: item['description'], // Assuming description is received in a proper format
-          datePosted: DateTime.parse(item['date_posted']), // Ensure the date format is correct
-        )).toList();
+        final List<dynamic> jsonData = json.decode(response.body);
+        sliders.value = jsonData.map((json) => Slider.fromJson(json)).toList();
       } else {
-        Get.snackbar('Error', 'Failed to load sliders: ${response.body}');
+        throw Exception('Failed to load sliders: ${response.body}');
       }
     } catch (e) {
-      Get.snackbar('Error', 'Failed to load sliders: $e');
+      Get.snackbar('Error', 'Failed to load sliders');
     } finally {
       isLoading.value = false;
     }
@@ -78,10 +64,7 @@ class SliderController extends GetxController {
 
   Future<bool> deleteSlider(int sliderId) async {
     try {
-      final response = await http.delete(
-        Uri.parse('http://localhost:3000/sliders/$sliderId'),
-      );
-
+      final response = await http.delete(Uri.parse('http://localhost:3000/delete-slider/$sliderId'));
       if (response.statusCode == 200) {
         fetchSliders();
         return true;
@@ -90,7 +73,7 @@ class SliderController extends GetxController {
         return false;
       }
     } catch (e) {
-      Get.snackbar('Error', 'An error occurred while deleting the slider: $e');
+      Get.snackbar('Error', 'An error occurred while deleting the slider');
       return false;
     }
   }

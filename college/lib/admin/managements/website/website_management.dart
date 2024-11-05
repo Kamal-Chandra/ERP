@@ -1,10 +1,10 @@
-import 'package:college/admin/managements/website/notice/notice_management.dart';
-import 'package:college/admin/managements/website/video/video_management.dart';
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
+import 'image/image_management.dart';
 import 'slider/slider_management.dart';
 import 'ticker/ticker_management.dart';
+import 'package:flutter/material.dart';
+import 'package:college/admin/managements/website/video/video_management.dart';
+import 'package:college/admin/managements/website/notice/notice_management.dart';
 
 class WebsiteController extends GetxController {
   var currentView = 'Notices'.obs;
@@ -80,7 +80,7 @@ class WebsiteManagement extends StatelessWidget {
           case 'Sliders':
             return SliderManagement();
           case 'Images':
-            // return ImageManagement();
+            return ImageManagement();
           case 'Videos':
             return VideoManagement();
           default:

@@ -1,15 +1,14 @@
-import 'dart:typed_data';
-import 'package:get/get.dart';
-import 'slider_controller.dart';
-import 'package:iconsax/iconsax.dart';
-import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:college/utils/constants/sizes.dart';
+import 'package:get/get.dart';
+import 'package:iconsax/iconsax.dart';
+import 'slider_controller.dart';
+import 'package:flutter/material.dart';
 import 'package:college/utils/constants/colors.dart';
 
 class SliderManagement extends StatelessWidget {
+  final SliderController sliderController = Get.put(SliderController());
+
   SliderManagement({super.key});
-  final SliderController controller = Get.put(SliderController());
 
   @override
   Widget build(BuildContext context) {
@@ -20,141 +19,141 @@ class SliderManagement extends StatelessWidget {
         actions: [
           Padding(
             padding: const EdgeInsets.all(12.0),
-            child: IconButton(onPressed: () {}, icon: const Icon(Iconsax.refresh, color: Colors.white)),
-          )
+            child: IconButton(
+              onPressed: () => sliderController.fetchSliders(),
+              icon: const Icon(Iconsax.refresh, color: Colors.white),
+            ),
+          ),
         ],
       ),
-      body: Obx(() {
-        if (controller.isLoading.value) {
-          return const Center(child: CircularProgressIndicator());
-        } else if (controller.sliders.isEmpty) {
-          return const Center(child: Text('No sliders available.'));
-        } else {
-          return GridView.builder(
-            padding: const EdgeInsets.all(16),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              childAspectRatio: 1.0,
-              crossAxisSpacing: 16,
-              mainAxisSpacing: 16,
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            const SizedBox(height: 16.0),
+            Expanded(
+              child: Obx(() {
+                if (sliderController.isLoading.value) {
+                  return const Center(child: CircularProgressIndicator());
+                } else if (sliderController.sliders.isEmpty) {
+                  return const Center(child: Text('No sliders have been published.'));
+                } else {
+                  return GridView.builder(
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 3,
+                      crossAxisSpacing: 8.0,
+                      mainAxisSpacing: 8.0,
+                      childAspectRatio: 1,
+                    ),
+                    itemCount: sliderController.sliders.length,
+                    itemBuilder: (context, index) {
+                      final slider = sliderController.sliders[index];
+                      return Card(
+                        color: Colors.transparent,
+                        child: Column(
+                          children: [
+                            Stack(
+                              children: [
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(TSizes.md),
+                                  child: Image.network(
+                                    slider.url,
+                                    fit: BoxFit.cover,
+                                    width: double.infinity,
+                                    height: 350,
+                                  ),
+                                ),
+                                Positioned(
+                                  top: 8.0,
+                                  right: 8.0,
+                                  child: IconButton(
+                                    icon: const Icon(Iconsax.trash, color: Colors.redAccent),
+                                    onPressed: () async {
+                                      bool success = await sliderController.deleteSlider(slider.id);
+                                      if (success) {
+                                        Get.snackbar('Success', 'Slider deleted successfully');
+                                      } else {
+                                        Get.snackbar('Error', 'Failed to delete slider');
+                                      }
+                                    },
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: TSizes.sm),
+                            Text(slider.title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
+                          ],
+                        ),
+                      );
+                    },
+                  );
+                }
+              }),
             ),
-            itemCount: controller.sliders.length,
-            itemBuilder: (context, index) {
-              final slider = controller.sliders[index];
-              return GestureDetector(
-                onTap: () {},
-                child: Card(
-                  child: Column(
-                    children: [
-                      Expanded(
-                        child: Image.memory(
-                          slider.imageData,
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Text(
-                          slider.title,
-                          style: const TextStyle(fontWeight: FontWeight.bold),
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            },
-          );
-        }
-      }),
+          ],
+        ),
+      ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          _showAddSliderDialog(context);
-        },
+        onPressed: () => _showAddSliderPopup(context),
         backgroundColor: TColors.primary,
         child: const Icon(Iconsax.add),
       ),
     );
   }
 
-  void _showAddSliderDialog(BuildContext context) {
-    final TextEditingController titleController = TextEditingController();
-    final TextEditingController descriptionController = TextEditingController();
-    Uint8List? imageData;
-
-    Future<void> pickImage() async {
-      final picker = ImagePicker();
-      final pickedFile = await picker.pickImage(source: ImageSource.gallery);
-      if (pickedFile != null) {
-        imageData = await pickedFile.readAsBytes();
-        (context as Element).markNeedsBuild();
-      }
-    }
-
+  void _showAddSliderPopup(BuildContext context) {
     showDialog(
       context: context,
-      builder: (context) {
+      builder: (BuildContext context) {
+        final titleController = TextEditingController();
+        final urlController = TextEditingController();
+
         return AlertDialog(
-          title: const Text('Add Slider Image'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: titleController,
-                decoration: const InputDecoration(labelText: 'Title'),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8.0),
+          ),
+          title: const Center(
+            child: Text(
+              'Add New Slider',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+          ),
+          content: SizedBox(
+            width: MediaQuery.of(context).size.width * 0.6,
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: titleController,
+                    decoration: const InputDecoration(labelText: 'Slider Title'),
+                  ),
+                  const SizedBox(height: 16.0),
+                  TextField(
+                    controller: urlController,
+                    decoration: const InputDecoration(labelText: 'Image URL'),
+                  ),
+                ],
               ),
-              const SizedBox(height: TSizes.sm),
-              TextField(
-                controller: descriptionController,
-                decoration: const InputDecoration(labelText: 'Description'),
-              ),
-              const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: pickImage,
-                child: const Padding(
-                  padding: EdgeInsets.all(8.0),
-                  child: Text('Select Image'),
-                ),
-              ),
-              const SizedBox(height: TSizes.sm),
-              if (imageData != null)
-                Padding(
-                  padding: const EdgeInsets.only(top: 8.0),
-                  child: Image.memory(imageData!, height: 100, fit: BoxFit.cover),
-                ),
-            ],
+            ),
           ),
           actions: [
             TextButton(
-              onPressed: () {
-                Get.back();
-              },
+              onPressed: () => Get.back(),
               child: const Text('Cancel'),
             ),
             TextButton(
-              onPressed: () {
-                if (titleController.text.isEmpty || descriptionController.text.isEmpty) {
-                  Get.snackbar('Error', 'Title and description cannot be empty');
-                  return;
-                }
-                if (imageData != null) {
-                  controller
-                      .addSlider(
-                        title: titleController.text,
-                        description: descriptionController.text,
-                        imageData: imageData!,
-                      )
-                      .then((success) {
-                    if (success) {
-                      Get.back();
-                    }
-                  });
+              onPressed: () async {
+                Get.back();
+                bool success = await sliderController.addSlider(titleController.text, urlController.text);
+                if (success) {
+                  Get.snackbar('Success', 'Slider added successfully');
                 } else {
-                  Get.snackbar('Error', 'Please select an image.');
+                  Get.snackbar('Error', 'Failed to add slider');
                 }
               },
-              child: const Text('Add'),
+              child: const Text('Save'),
             ),
           ],
         );

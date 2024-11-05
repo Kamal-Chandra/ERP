@@ -142,6 +142,48 @@ app.get('/students/:id', (req, res) => {
     });
 });
 
+// Update student details
+app.post('/students/update/:id', (req, res) => {
+    const studentId = req.params.id;
+    const { firstName, lastName, department_code } = req.body;
+    const query = `
+        UPDATE student 
+        SET firstName = ?, lastName = ?, department_code = ? 
+        WHERE id = ?
+    `;
+    db.query(query, [firstName, lastName, department_code, studentId], (err, result) => {
+        if (err) {
+            console.error('Error updating student:', err);
+            res.status(500).json({ error: 'Failed to update student details' });
+        } else if (result.affectedRows === 0) {
+            res.status(404).json({ message: 'Student not found' });
+        } else {
+            res.status(200).json({ message: 'Student details updated successfully' });
+        }
+    });
+});
+
+// Update faculty details
+app.post('/faculty/update/:id', (req, res) => {
+    const instructorId = req.params.id;
+    const { firstName, lastName, department } = req.body;
+    const query = `
+        UPDATE instructor 
+        SET firstName = ?, lastName = ?, department = ? 
+        WHERE id = ?
+    `;
+    db.query(query, [firstName, lastName, department, instructorId], (err, result) => {
+        if (err) {
+            console.error('Error updating faculty:', err);
+            res.status(500).json({ error: 'Failed to update faculty details' });
+        } else if (result.affectedRows === 0) {
+            res.status(404).json({ message: 'Faculty not found' });
+        } else {
+            res.status(200).json({ message: 'Faculty details updated successfully' });
+        }
+    });
+});
+
 // Fetch instructor data along with all courses they teach
 app.get('/instructors/:id', (req, res) => {
     const instructorId = req.params.id;
@@ -977,7 +1019,7 @@ app.delete('/delete-ticker/:id', (req, res) => {
     db.query('DELETE FROM ticker WHERE ticker_id = ?', [tickerId], (err, result) => {
         if (err) return res.status(500).json({ error: err.message });
         if (result.affectedRows === 0) {
-            return res.status(404).json({ error: 'Ticker not found' });
+            return res.status(404).json({ error: 'Video not found' });
         }
         res.status(200).json({ message: 'Ticker deleted successfully' });
     });
@@ -999,7 +1041,7 @@ app.post('/add-video', async (req, res) => {
     }
     db.query('INSERT INTO video (title, url) VALUES (?, ?)', [title, url], (err, result) => {
         if (err) return res.status(500).json({ error: err.message });
-        const message = 'Video added successfully'; // Define the message here
+        const message = 'Video added successfully';
         res.status(200).json({ id: result.insertId, message });
     });
 });
@@ -1011,9 +1053,77 @@ app.delete('/delete-video/:videoId', async (req, res) => {
     db.query('DELETE FROM video WHERE id = ?', [videoId], (err, result) => {
         if (err) return res.status(500).json({ error: err.message });
         if (result.affectedRows === 0) {
-            return res.status(404).json({ error: 'Ticker not found' });
+            return res.status(404).json({ error: 'Video not found' });
         }
-        res.status(200).json({ message: 'Ticker deleted successfully' });
+        res.status(200).json({ message: 'Video deleted successfully' });
+    });
+});
+
+// Endpoint to fetch all images
+app.get('/images', (req, res) => {
+    db.query('SELECT * FROM image', (err, results) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json(results);
+    });
+});
+
+// Endpoint to add a new image
+app.post('/add-image', async (req, res) => {
+    const { url } = req.body;
+    if (!url) {
+        return res.status(400).json({ error: 'URL cannot be empty' });
+    }
+    db.query('INSERT INTO image (url) VALUES (?)', [url], (err, result) => {
+        if (err) return res.status(500).json({ error: err.message });
+        const message = 'Image added successfully';
+        res.status(200).json({ id: result.insertId, message });
+    });
+});
+
+// Endpoint to delete a image by ID
+app.delete('/delete-image/:imageId', async (req, res) => {
+    const imageId = parseInt(req.params.imageId, 10);
+
+    db.query('DELETE FROM image WHERE id = ?', [imageId], (err, result) => {
+        if (err) return res.status(500).json({ error: err.message });
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: 'Image not found' });
+        }
+        res.status(200).json({ message: 'Image deleted successfully' });
+    });
+});
+
+// Endpoint to fetch all sliders
+app.get('/sliders', (req, res) => {
+    db.query('SELECT * FROM slider', (err, results) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json(results);
+    });
+});
+
+// Endpoint to add a new slider
+app.post('/add-slider', async (req, res) => {
+    const { title, url } = req.body;
+    if (!url || !title) {
+        return res.status(400).json({ error: 'Title and URL cannot be empty' });
+    }
+    db.query('INSERT INTO slider (title, url) VALUES (?, ?)', [title, url], (err, result) => {
+        if (err) return res.status(500).json({ error: err.message });
+        const message = 'Slider added successfully';
+        res.status(200).json({ id: result.insertId, message });
+    });
+});
+
+// Endpoint to delete a slider by ID
+app.delete('/delete-slider/:sliderId', async (req, res) => {
+    const sliderId = parseInt(req.params.sliderId, 10);
+
+    db.query('DELETE FROM slider WHERE id = ?', [sliderId], (err, result) => {
+        if (err) return res.status(500).json({ error: err.message });
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: 'Slider not found' });
+        }
+        res.status(200).json({ message: 'Slider deleted successfully' });
     });
 });
 

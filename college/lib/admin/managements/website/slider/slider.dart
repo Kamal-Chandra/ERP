@@ -1,28 +1,19 @@
-import 'dart:typed_data';
-import 'dart:convert';
-
 class Slider {
-  final int sliderId;
-  final Uint8List imageData;
+  final int id;
   final String title;
-  final String description;
-  final DateTime datePosted;
+  final String url;
 
   Slider({
-    this.sliderId = 0,
-    required this.imageData,
+    required this.id,
     required this.title,
-    required this.description,
-    DateTime? datePosted,
-  }) : datePosted = datePosted ?? DateTime.now();
+    required this.url,
+  });
 
   factory Slider.fromJson(Map<String, dynamic> json) {
     return Slider(
-      sliderId: json['slider_id'],
-      imageData: base64Decode(json['image_data']),
+      id: json['id'],
       title: json['title'],
-      description: json['description'],
-      datePosted: DateTime.parse(json['date_posted']),
+      url: json['url'],
     );
   }
 }

@@ -67,12 +67,23 @@ class StudentManagement extends StatelessWidget {
                               style: Theme.of(context).textTheme.titleLarge),
                           subtitle: Text('ID: ${student['id']}\nDepartment: ${student['department_code']}',
                               style: Theme.of(context).textTheme.titleMedium),
-                          trailing: const Icon(Iconsax.profile),
-                          onTap: () {
-                            studentController.fetchStudentDetails(student['id']).then((details) {
-                              _showStudentDetailsDialog(context, details);
-                            });
-                          },
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                icon: const Icon(Iconsax.info_circle),
+                                onPressed: () {
+                                  studentController.fetchStudentDetails(student['id']).then((details) {
+                                    _showStudentDetailsDialog(context, details);
+                                  });
+                                },
+                              ),
+                              IconButton(
+                                icon: const Icon(Iconsax.edit),
+                                onPressed: () {_showEditStudentDialog(context, studentController, student);},
+                              ),
+                            ],
+                          ),
                         ),
                       );
                     },
@@ -220,6 +231,50 @@ class StudentManagement extends StatelessWidget {
     );
   }
 
+  void _showEditStudentDialog(BuildContext context, AdminStudentController studentController, Map<String, dynamic> student) {
+    final firstNameController = TextEditingController(text: student['firstName']);
+    final lastNameController = TextEditingController(text: student['lastName']);
+    final departmentCodeController = TextEditingController(text: student['department_code']);
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Edit Student Details"),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(controller: firstNameController, decoration: const InputDecoration(labelText: "First Name")),
+              const SizedBox(height: TSizes.sm),
+              TextField(controller: lastNameController, decoration: const InputDecoration(labelText: "Last Name")),
+              const SizedBox(height: TSizes.sm),
+              TextField(controller: departmentCodeController, decoration: const InputDecoration(labelText: "Department Code")),
+              const SizedBox(height: TSizes.sm),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Get.back(),
+              child: const Text("Cancel"),
+            ),
+            TextButton(
+              onPressed: () {
+                Get.back();
+                studentController.updateStudent(
+                  student['id'],
+                  firstNameController.text,
+                  lastNameController.text,
+                  departmentCodeController.text,
+                );
+              },
+              child: const Text("Update"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   void _showNewStudentDialog(BuildContext context, AdminStudentController studentController) {
     final idController = TextEditingController();
     final firstNameController = TextEditingController();
@@ -340,6 +395,29 @@ class AdminStudentController extends GetxController {
         fetchDepartments();
       } else {
         Get.snackbar("Error", "Failed to add student");
+      }
+    } catch (e) {
+      Get.snackbar("Error", "Failed to connect to the server");
+    }
+  }
+
+  Future<void> updateStudent(int id, String firstName, String lastName, String departmentCode) async {
+    try {
+      final response = await http.post(
+        Uri.parse('http://localhost:3000/students/update/$id'),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({
+          "firstName": firstName,
+          "lastName": lastName,
+          "department_code": departmentCode,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        Get.snackbar("Success", "Student updated successfully");
+        fetchDepartments();
+      } else {
+        Get.snackbar("Error", "Failed to update student");
       }
     } catch (e) {
       Get.snackbar("Error", "Failed to connect to the server");

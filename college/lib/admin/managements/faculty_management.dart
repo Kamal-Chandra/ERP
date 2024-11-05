@@ -67,19 +67,29 @@ class FacultyManagement extends StatelessWidget {
                               style: Theme.of(context).textTheme.titleLarge),
                           subtitle: Text('ID: ${faculty['id']}\nDepartment: ${faculty['department']}',
                               style: Theme.of(context).textTheme.titleMedium),
-                          trailing: const Icon(Iconsax.profile),
-                          onTap: (){
-                            facultyController.fetchFacultyDetails(faculty['id']).then((details) {
-                              _showFacultyDetailsDialog(context, details);
-                            });
-                          },
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                icon: const Icon(Iconsax.info_circle),
+                                onPressed: () {
+                                  facultyController.fetchFacultyDetails(faculty['id']).then((details) {
+                                    _showFacultyDetailsDialog(context, details);
+                                  });
+                                },
+                              ),
+                              IconButton(
+                                icon: const Icon(Iconsax.edit),
+                                onPressed: () {_showEditFacultyDialog(context, facultyController, faculty);},
+                              ),
+                            ],
+                          ),
                         ),
                       );
                     },
                   );
                 }
 
-                // Show department grid when no search query is present
                 if (facultyController.departments.isEmpty) {
                   return const Center(child: Text('No departments found.'));
                 }
@@ -170,6 +180,50 @@ class FacultyManagement extends StatelessWidget {
     );
   }
 }
+
+void _showEditFacultyDialog(BuildContext context, AdminFacultyController facultyController, Map<String, dynamic> faculty) {
+    final firstNameController = TextEditingController(text: faculty['firstName']);
+    final lastNameController = TextEditingController(text: faculty['lastName']);
+    final departmentController = TextEditingController(text: faculty['department']);
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Edit Faculty Details"),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(controller: firstNameController, decoration: const InputDecoration(labelText: "First Name")),
+              const SizedBox(height: TSizes.sm),
+              TextField(controller: lastNameController, decoration: const InputDecoration(labelText: "Last Name")),
+              const SizedBox(height: TSizes.sm),
+              TextField(controller: departmentController, decoration: const InputDecoration(labelText: "Department Code")),
+              const SizedBox(height: TSizes.sm),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Get.back(),
+              child: const Text("Cancel"),
+            ),
+            TextButton(
+              onPressed: () {
+                Get.back();
+                facultyController.updateFaculty(
+                  faculty['id'],
+                  firstNameController.text,
+                  lastNameController.text,
+                  departmentController.text,
+                );
+              },
+              child: const Text("Submit"),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
 void _showFacultyDetailsDialog(BuildContext context, Map<String, dynamic> details) {
   List<dynamic> courses = details['courses'] != null 
@@ -310,6 +364,29 @@ class AdminFacultyController extends GetxController {
       Get.snackbar('Error', 'Failed to connect to the server');
     }
     return {};
+  }
+
+  Future<void> updateFaculty(int id, String firstName, String lastName, String department) async {
+    try {
+      final response = await http.post(
+        Uri.parse('http://localhost:3000/faculty/update/$id'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          'firstName': firstName,
+          'lastName': lastName,
+          'department': department,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        Get.snackbar('Success', 'Faculty member updated successfully');
+        fetchDepartments();
+      } else {
+        Get.snackbar('Error', 'Failed to update faculty member');
+      }
+    } catch (e) {
+      Get.snackbar('Error', 'Failed to connect to the server');
+    }
   }
 
   Future<void> addFaculty(int id, String firstName, String lastName, String department) async {
