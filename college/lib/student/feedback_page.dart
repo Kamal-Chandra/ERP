@@ -1,3 +1,5 @@
+import 'package:college/utils/constants/colors.dart';
+import 'package:college/utils/constants/sizes.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -34,13 +36,13 @@ class _FeedbackPageState extends State<FeedbackPage> {
       );
 
       if (response.statusCode == 200) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
           content: Text("Feedback submitted successfully!"),
         ));
         _subjectController.clear();
         _feedbackController.clear();
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
           content: Text("Failed to submit feedback. Please try again."),
         ));
       }
@@ -51,76 +53,80 @@ class _FeedbackPageState extends State<FeedbackPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-          title: const Text("Feedback", style: TextStyle(color: Colors.white)),
+        centerTitle: true,
+          title: const Text("Feedback", style: TextStyle(color: TColors.primary)),
           backgroundColor: Colors.black,
           automaticallyImplyLeading: false),
-      body: Container(
-        color: Colors.black,
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              TextFormField(
-                controller: _subjectController,
-                decoration: InputDecoration(
-                  labelText: 'Subject',
-                  labelStyle: TextStyle(color: Colors.white),
-                  enabledBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: Colors.white),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: Colors.green),
-                  ),
-                ),
-                style: TextStyle(color: Colors.white),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter a subject';
-                  }
-                  return null;
-                },
-              ),
-              SizedBox(height: 24),
-              TextFormField(
-                controller: _feedbackController,
-                decoration: InputDecoration(
-                  alignLabelWithHint: true,
-                  labelText: 'Feedback',
-                  labelStyle: TextStyle(color: Colors.white),
-                  enabledBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: Colors.white),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: Colors.green),
-                  ),
-                ),
-                maxLines: 5,
-                style: TextStyle(color: Colors.white),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter your feedback';
-                  }
-                  return null;
-                },
-              ),
-              SizedBox(height: 24),
-              Align(
-                alignment: Alignment.centerRight,
-                child: ElevatedButton(
-                  onPressed: submitFeedback,
-                  child: Text('Submit', style: TextStyle(color: Colors.white)),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.zero,
+      body: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 32.0),
+        child: Container(
+          color: Colors.black,
+          padding: const EdgeInsets.all(16.0),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                TextFormField(
+                  controller: _subjectController,
+                  decoration: const InputDecoration(
+                    labelText: 'Subject',
+                    labelStyle: TextStyle(color: Colors.white),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.white),
                     ),
-                    padding: EdgeInsets.symmetric(vertical: 12, horizontal: 24),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: TColors.primary),
+                    ),
+                  ),
+                  style: const TextStyle(color: Colors.white),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter a subject';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 24),
+                TextFormField(
+                  controller: _feedbackController,
+                  decoration: const InputDecoration(
+                    alignLabelWithHint: true,
+                    labelText: 'Feedback',
+                    labelStyle: TextStyle(color: Colors.white),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.white),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: TColors.primary),
+                    ),
+                  ),
+                  maxLines: 5,
+                  style: const TextStyle(color: Colors.white),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter your feedback';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 24),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: ElevatedButton(
+                    onPressed: submitFeedback,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: TColors.primary,
+                      shape: const RoundedRectangleBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(TSizes.md)),
+                      ),
+                      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
+                    ),
+                    child: const Text('Submit', style: TextStyle(color: Colors.white)),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

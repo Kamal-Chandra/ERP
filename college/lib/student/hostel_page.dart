@@ -1,3 +1,4 @@
+import 'package:college/utils/constants/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -51,22 +52,23 @@ class _HostelPageState extends State<HostelPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+          centerTitle: true,
           title: const Text("Hostel Details",
-              style: TextStyle(color: Colors.white)),
+              style: TextStyle(color: TColors.primary)),
           backgroundColor: Colors.black,
           automaticallyImplyLeading: false),
       body: Container(
         color: Colors.black,
-        padding: const EdgeInsets.all(8.0),
+        padding: const EdgeInsets.all(32.0),
         child: isLoading
-            ? Center(child: CircularProgressIndicator())
+            ? const Center(child: CircularProgressIndicator())
             : Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Center(
                     child: Text(
                       "Room Number: $roomNumber",
-                      style: TextStyle(
+                      style: const TextStyle(
                           color: Colors.white,
                           fontSize: 30,
                           fontWeight: FontWeight.bold),
@@ -74,8 +76,8 @@ class _HostelPageState extends State<HostelPage> {
                   ),
                   const SizedBox(height: 100),
                   Text(
-                    "Occupants:",
-                    style: TextStyle(color: Colors.white, fontSize: 20),
+                    roommates.isNotEmpty?"Occupants:":"",
+                    style: const TextStyle(color: Colors.white, fontSize: 20),
                   ),
                   Expanded(
                     child: ListView.builder(
@@ -85,7 +87,7 @@ class _HostelPageState extends State<HostelPage> {
                         return ListTile(
                           title: Text(
                             '${roommate['firstName']} ${roommate['lastName']}',
-                            style: TextStyle(color: Colors.white),
+                            style: const TextStyle(color: Colors.white),
                           ),
                           tileColor: Colors.grey[800],
                         );

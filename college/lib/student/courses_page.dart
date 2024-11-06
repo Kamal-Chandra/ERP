@@ -1,6 +1,9 @@
+import 'package:college/utils/constants/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+
+import 'package:iconsax/iconsax.dart';
 
 class CoursesPage extends StatefulWidget {
   final int studentId;
@@ -42,7 +45,6 @@ class _CoursesPageState extends State<CoursesPage> {
         throw Exception('Failed to load courses');
       }
     } catch (e) {
-      print('Error fetching courses: $e');
       setState(() {
         _isLoading = false;
       });
@@ -62,24 +64,25 @@ class _CoursesPageState extends State<CoursesPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-          title: const Text("Courses", style: TextStyle(color: Colors.white)),
+        centerTitle: true,
+          title: const Text("Courses", style: TextStyle(color: TColors.primary)),
           backgroundColor: Colors.black,
           automaticallyImplyLeading: false),
       body: Container(
         color: Colors.black,
-        padding: const EdgeInsets.all(8.0),
+        padding: const EdgeInsets.symmetric(horizontal: 32.0),
         child: Column(
           children: [
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             TextField(
               controller: _searchController,
               decoration: InputDecoration(
                 hintText: 'Search courses',
-                prefixIcon: Icon(Icons.search, color: Colors.white),
-                hintStyle: TextStyle(color: Colors.white),
-                contentPadding: EdgeInsets.symmetric(horizontal: 16.0),
+                prefixIcon: const Icon(Iconsax.search_normal, color: Colors.white),
+                hintStyle: const TextStyle(color: Colors.white),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16.0),
                 filled: true,
-                fillColor: Colors.grey[800],
+                fillColor: Colors.transparent,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10.0),
                   borderSide: BorderSide.none,
@@ -88,7 +91,7 @@ class _CoursesPageState extends State<CoursesPage> {
             ),
             const SizedBox(height: 16),
             _isLoading
-                ? Center(child: CircularProgressIndicator())
+                ? const Center(child: CircularProgressIndicator())
                 : Expanded(
                     child: ListView.builder(
                       itemCount: _filteredCourses.length,
@@ -99,17 +102,17 @@ class _CoursesPageState extends State<CoursesPage> {
                           child: ListTile(
                             title: Text(
                               course['course_name'],
-                              style: TextStyle(
+                              style: const TextStyle(
                                   color: Colors.white,
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold),
                             ),
                             subtitle: Text(
                               'Instructor: ${course['instructor_name']} \nMarks: ${course['marks'] != null ? course['marks'].toString() : 'N/A'}',
-                              style: TextStyle(color: Colors.white70),
+                              style: const TextStyle(color: Colors.white70),
                             ),
                             tileColor: Colors.grey[800],
-                            contentPadding: EdgeInsets.symmetric(
+                            contentPadding: const EdgeInsets.symmetric(
                                 horizontal: 16, vertical: 10),
                           ),
                         );

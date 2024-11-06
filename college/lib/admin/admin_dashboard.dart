@@ -67,7 +67,7 @@ class AdminDashboard extends StatelessWidget {
             child: Obx(() {
               switch (dashboardController.currentView.value) {
                 case 'Website':
-                  return WebsiteManagement();
+                  return const WebsiteManagement();
                 case 'Student':
                   return const StudentManagement();
                 case 'Faculty':

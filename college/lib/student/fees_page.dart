@@ -1,6 +1,9 @@
+import 'package:college/utils/constants/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+
+import 'package:iconsax/iconsax.dart';
 
 class FeesPage extends StatefulWidget {
   final int studentId;
@@ -64,27 +67,28 @@ class _FeesPageState extends State<FeesPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-          title: Text(
+        centerTitle: true,
+          title: const Text(
             'Unpaid Fees',
-            style: TextStyle(color: Colors.white),
+            style: TextStyle(color: TColors.primary),
           ),
           backgroundColor: Colors.black,
           automaticallyImplyLeading: false),
       body: Container(
         color: Colors.black,
-        padding: const EdgeInsets.all(8.0),
+        padding: const EdgeInsets.symmetric(horizontal: 32.0),
         child: Column(
           children: [
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             TextField(
               controller: _searchController,
               decoration: InputDecoration(
                 hintText: 'Search fees',
-                prefixIcon: Icon(Icons.search, color: Colors.white),
-                hintStyle: TextStyle(color: Colors.white),
-                contentPadding: EdgeInsets.symmetric(horizontal: 16.0),
+                prefixIcon: const Icon(Iconsax.search_normal, color: Colors.white),
+                hintStyle: const TextStyle(color: Colors.white),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16.0),
                 filled: true,
-                fillColor: Colors.grey[800],
+                fillColor: Colors.transparent,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10.0),
                   borderSide: BorderSide.none,
@@ -93,18 +97,18 @@ class _FeesPageState extends State<FeesPage> {
             ),
             const SizedBox(height: 16),
             _isLoading
-                ? Expanded(child: Center(child: CircularProgressIndicator()))
+                ? const Expanded(child: Center(child: CircularProgressIndicator()))
                 : _error != null
                     ? Expanded(
                         child: Center(
                           child: Text(
                             _error!,
-                            style: TextStyle(color: Colors.red, fontSize: 18),
+                            style: const TextStyle(color: Colors.red, fontSize: 18),
                           ),
                         ),
                       )
                     : _filteredFees.isEmpty
-                        ? Expanded(
+                        ? const Expanded(
                             child: Center(
                               child: Text(
                                 'No pending fees',
@@ -124,7 +128,7 @@ class _FeesPageState extends State<FeesPage> {
                                   child: ListTile(
                                     title: Text(
                                       fee['fee_type'],
-                                      style: TextStyle(
+                                      style: const TextStyle(
                                         color: Colors.white,
                                         fontSize: 18,
                                         fontWeight: FontWeight.bold,
@@ -134,21 +138,21 @@ class _FeesPageState extends State<FeesPage> {
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
                                       children: [
-                                        SizedBox(height: 4),
+                                        const SizedBox(height: 4),
                                         Text(
                                           'Amount: ${fee['amount']}',
                                           style:
-                                              TextStyle(color: Colors.white70),
+                                              const TextStyle(color: Colors.white70),
                                         ),
                                         Text(
                                           'Due Date: ${_formatDate(fee['due_date'])}',
                                           style:
-                                              TextStyle(color: Colors.white70),
+                                              const TextStyle(color: Colors.white70),
                                         ),
                                       ],
                                     ),
                                     tileColor: Colors.black,
-                                    contentPadding: EdgeInsets.symmetric(
+                                    contentPadding: const EdgeInsets.symmetric(
                                         horizontal: 16, vertical: 10),
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(10),

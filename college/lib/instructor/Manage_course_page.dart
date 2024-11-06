@@ -1,6 +1,10 @@
+import 'package:college/utils/constants/colors.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+
+import 'package:iconsax/iconsax.dart';
 
 class ManageCoursePage extends StatefulWidget {
   final int courseId;
@@ -91,18 +95,18 @@ class _ManageCoursePageState extends State<ManageCoursePage> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text('Update Marks'),
+          title: const Text('Update Marks'),
           content: TextField(
             controller: _marksController,
             keyboardType: TextInputType.number,
-            decoration: InputDecoration(
+            decoration: const InputDecoration(
               labelText: 'Enter new marks',
             ),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: Text('Cancel'),
+              child: const Text('Cancel'),
             ),
             TextButton(
               onPressed: () {
@@ -114,7 +118,7 @@ class _ManageCoursePageState extends State<ManageCoursePage> {
                   print('Invalid marks entered');
                 }
               },
-              child: Text('Update'),
+              child: const Text('Update'),
             ),
           ],
         );
@@ -126,55 +130,56 @@ class _ManageCoursePageState extends State<ManageCoursePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title:
-            const Text("Manage Course", style: TextStyle(color: Colors.white)),
+        centerTitle: true,
+        title: const Text("Manage Course", style: TextStyle(color: TColors.primary)),
         backgroundColor: Colors.black,
         automaticallyImplyLeading: false,
+        leading: IconButton(onPressed: ()=>Get.back(), icon: const Icon(Iconsax.arrow_left, color: TColors.primary)),
       ),
       body: Container(
         color: Colors.black,
-        padding: const EdgeInsets.all(8.0),
+        padding: const EdgeInsets.symmetric(horizontal: 32.0),
         child: Column(
           children: [
-            SizedBox(height: 20),
-            TextField(
-              controller: _enrollStudentController,
-              decoration: InputDecoration(
-                labelText: 'Enter Student ID to Enroll',
-                labelStyle: TextStyle(color: Colors.white),
-                suffixIcon: IconButton(
-                  icon: Icon(Icons.add),
-                  onPressed: enrollStudent,
-                  color: Colors.white,
-                ),
-                filled: true,
-                fillColor: Colors.grey[800],
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10.0),
-                  borderSide: BorderSide.none,
-                ),
-              ),
-              style: TextStyle(color: Colors.white),
-            ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
             TextField(
               controller: _searchController,
               decoration: InputDecoration(
                 hintText: 'Search students',
-                prefixIcon: Icon(Icons.search, color: Colors.white),
-                hintStyle: TextStyle(color: Colors.white),
+                prefixIcon: const Icon(Iconsax.search_normal, color: Colors.white),
+                hintStyle: const TextStyle(color: Colors.white),
                 filled: true,
-                fillColor: Colors.grey[800],
+                fillColor: Colors.transparent,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10.0),
                   borderSide: BorderSide.none,
                 ),
               ),
-              style: TextStyle(color: Colors.white),
+              style: const TextStyle(color: Colors.white),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: _enrollStudentController,
+              decoration: InputDecoration(
+                labelText: 'Enter Student ID to Enroll',
+                labelStyle: const TextStyle(color: Colors.white),
+                suffixIcon: IconButton(
+                  icon: const Icon(Iconsax.add),
+                  onPressed: enrollStudent,
+                  color: Colors.white,
+                ),
+                filled: true,
+                fillColor: Colors.transparent,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10.0),
+                  borderSide: BorderSide.none,
+                ),
+              ),
+              style: const TextStyle(color: Colors.white),
             ),
             const SizedBox(height: 16),
             _isLoading
-                ? Center(child: CircularProgressIndicator(color: Colors.white))
+                ? const Center(child: CircularProgressIndicator(color: Colors.white))
                 : Expanded(
                     child: ListView.builder(
                       itemCount: _filteredStudents.length,
@@ -185,20 +190,20 @@ class _ManageCoursePageState extends State<ManageCoursePage> {
                           child: ListTile(
                             title: Text(
                               student['name'],
-                              style: TextStyle(
+                              style: const TextStyle(
                                   color: Colors.white,
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold),
                             ),
                             subtitle: Text(
                               'ID: ${student['id']}, Marks: ${student['marks'] != null ? student['marks'].toString() : 'N/A'}',
-                              style: TextStyle(color: Colors.white70),
+                              style: const TextStyle(color: Colors.white70),
                             ),
                             tileColor: Colors.grey[800],
-                            contentPadding: EdgeInsets.symmetric(
+                            contentPadding: const EdgeInsets.symmetric(
                                 horizontal: 16, vertical: 10),
                             trailing: IconButton(
-                              icon: Icon(Icons.edit, color: Colors.white),
+                              icon: const Icon(Iconsax.edit, color: Colors.white),
                               onPressed: () {
                                 showUpdateMarksDialog(
                                     student['id'], student['marks']);

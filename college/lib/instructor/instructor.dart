@@ -1,9 +1,13 @@
+import 'package:college/app_bar.dart';
+import 'package:college/utils/constants/colors.dart';
+import 'package:college/utils/constants/sizes.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:college/instructor/instructor_controller.dart';
 import 'package:college/instructor/courses_page.dart';
 import 'package:college/instructor/library_page.dart';
 import 'package:college/instructor/feedback_page.dart';
+import 'package:iconsax/iconsax.dart';
 
 class InstructorDashboard extends StatefulWidget {
   final int id;
@@ -36,6 +40,7 @@ class _InstructorDashboardState extends State<InstructorDashboard> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: const TAppBar(title: Text('Faculty Panel'), showBackArrow: true),
       body: Row(
         children: [
           // Sidebar
@@ -48,14 +53,14 @@ class _InstructorDashboardState extends State<InstructorDashboard> {
                 CircleAvatar(
                   radius: 40,
                   backgroundColor: Colors.grey[700],
-                  child: Icon(Icons.person, size: 40, color: Colors.white),
+                  child: const Icon(Iconsax.user, size: 40, color: Colors.white),
                 ),
                 const SizedBox(height: 16),
                 Obx(() {
                   return Column(
                     children: [
                       Text(
-                        'Name: ${instructorController.instructorName.value}',
+                        instructorController.instructorName.value,
                         style:
                             const TextStyle(color: Colors.white, fontSize: 20),
                       ),
@@ -69,9 +74,12 @@ class _InstructorDashboardState extends State<InstructorDashboard> {
                     ],
                   );
                 }),
-                _buildSidebarItem("Courses", Icons.book, 0),
-                _buildSidebarItem("Library", Icons.library_books, 1),
-                _buildSidebarItem("Feedback", Icons.feedback, 2),
+                const SizedBox(height: TSizes.sm),
+                _buildSidebarItem("Courses", Iconsax.bookmark, 0),
+                const SizedBox(height: TSizes.sm),
+                _buildSidebarItem("Library", Iconsax.book, 1),
+                const SizedBox(height: TSizes.sm),
+                _buildSidebarItem("Feedback", Iconsax.message_question, 2),
               ],
             ),
           ),
@@ -89,8 +97,8 @@ class _InstructorDashboardState extends State<InstructorDashboard> {
 
   Widget _buildSidebarItem(String title, IconData icon, int index) {
     return ListTile(
-      leading: Icon(icon, color: Colors.white),
-      title: Text(title, style: const TextStyle(color: Colors.white)),
+      leading: Icon(icon, color: selectedIndex==index? TColors.primary: Colors.lightBlueAccent),
+      title: Text(title, style: TextStyle(color: selectedIndex==index?TColors.primary: Colors.white)),
       selected: selectedIndex == index,
       selectedTileColor: Colors.grey[700],
       onTap: () {

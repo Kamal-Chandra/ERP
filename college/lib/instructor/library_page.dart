@@ -1,6 +1,9 @@
+import 'package:college/utils/constants/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+
+import 'package:iconsax/iconsax.dart';
 
 class FacultyLibraryPage extends StatefulWidget {
   final int instructorId;
@@ -56,10 +59,8 @@ class _FacultyLibraryPageState extends State<FacultyLibraryPage> {
             isLoading = false;
           });
         }
-        print(errorMessage);
       }
     } catch (e) {
-      print('Error fetching books: $e');
       setState(() {
         errorMessage = 'Error fetching data. Please try again.';
         isLoading = false;
@@ -80,71 +81,75 @@ class _FacultyLibraryPageState extends State<FacultyLibraryPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-          title: const Text("Library", style: TextStyle(color: Colors.white)),
+        centerTitle: true,
+          title: const Text("Library", style: TextStyle(color: TColors.primary)),
           backgroundColor: Colors.black,
           automaticallyImplyLeading: false),
       body: Container(
         color: Colors.black,
         padding: const EdgeInsets.all(8.0),
-        child: Column(
-          children: [
-            SizedBox(height: 20),
-            TextField(
-              controller: _searchController,
-              decoration: InputDecoration(
-                hintText: 'Search books',
-                prefixIcon: Icon(Icons.search, color: Colors.white),
-                hintStyle: TextStyle(color: Colors.white),
-                contentPadding: EdgeInsets.symmetric(horizontal: 16.0),
-                filled: true,
-                fillColor: Colors.grey[800],
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10.0),
-                  borderSide: BorderSide.none,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 32.0),
+          child: Column(
+            children: [
+              const SizedBox(height: 20),
+              TextField(
+                controller: _searchController,
+                decoration: InputDecoration(
+                  hintText: 'Search books',
+                  prefixIcon: const Icon(Iconsax.search_normal, color: Colors.white),
+                  hintStyle: const TextStyle(color: Colors.white),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  filled: true,
+                  fillColor: Colors.transparent,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10.0),
+                    borderSide: BorderSide.none,
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 16),
-            isLoading
-                ? Center(child: CircularProgressIndicator())
-                : errorMessage.isNotEmpty
-                    ? Center(
-                        child: Text(errorMessage,
-                            style: TextStyle(fontSize: 18, color: Colors.red)))
-                    : filteredBooks.isEmpty
-                        ? Center(
-                            child: Text("No books issued.",
-                                style: TextStyle(
-                                    fontSize: 24, color: Colors.white)))
-                        : Expanded(
-                            child: ListView.builder(
-                              itemCount: filteredBooks.length,
-                              itemBuilder: (context, index) {
-                                final book = filteredBooks[index];
-                                return Padding(
-                                  padding:
-                                      const EdgeInsets.symmetric(vertical: 8.0),
-                                  child: ListTile(
-                                    title: Text(
-                                      book['title'],
-                                      style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.bold),
+              const SizedBox(height: 16),
+              isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : errorMessage.isNotEmpty
+                      ? Center(
+                          child: Text(errorMessage,
+                              style: const TextStyle(fontSize: 18, color: Colors.white)))
+                      : filteredBooks.isEmpty
+                          ? const Center(
+                              child: Text("No books issued.",
+                                  style: TextStyle(
+                                      fontSize: 24, color: Colors.white)))
+                          : Expanded(
+                              child: ListView.builder(
+                                itemCount: filteredBooks.length,
+                                itemBuilder: (context, index) {
+                                  final book = filteredBooks[index];
+                                  return Padding(
+                                    padding:
+                                        const EdgeInsets.symmetric(vertical: 8.0),
+                                    child: ListTile(
+                                      title: Text(
+                                        book['title'],
+                                        style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                      subtitle: Text(
+                                        'Author: ${book['author']} \nIssued on: ${book['issue_date']}',
+                                        style: const TextStyle(color: Colors.white70),
+                                      ),
+                                      tileColor: Colors.grey[800],
+                                      contentPadding: const EdgeInsets.symmetric(
+                                          horizontal: 16, vertical: 10),
                                     ),
-                                    subtitle: Text(
-                                      'Author: ${book['author']} \nIssued on: ${book['issue_date']}',
-                                      style: TextStyle(color: Colors.white70),
-                                    ),
-                                    tileColor: Colors.grey[800],
-                                    contentPadding: EdgeInsets.symmetric(
-                                        horizontal: 16, vertical: 10),
-                                  ),
-                                );
-                              },
+                                  );
+                                },
+                              ),
                             ),
-                          ),
-          ],
+            ],
+          ),
         ),
       ),
     );
