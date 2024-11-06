@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:get/get.dart';
+import 'managements/course_management.dart';
 import 'widgets/admin_sidebar.dart';
 import 'package:college/app_bar.dart';
 import 'package:flutter/material.dart';
@@ -72,6 +73,8 @@ class AdminDashboard extends StatelessWidget {
                   return const StudentManagement();
                 case 'Faculty':
                   return const FacultyManagement();
+                case 'Courses':
+                  return const CourseManagement();
                 case 'Fees':
                   return FeeManagement();
                 case 'Library':

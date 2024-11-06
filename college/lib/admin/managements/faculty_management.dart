@@ -355,7 +355,6 @@ class AdminFacultyController extends GetxController {
     try {
       final response = await http.get(Uri.parse('http://localhost:3000/faculty/$id'));
       if (response.statusCode == 200) {
-        // Return the decoded JSON response as a Map
         return json.decode(response.body) as Map<String, dynamic>;
       } else {
         Get.snackbar('Error', 'Failed to load faculty details');

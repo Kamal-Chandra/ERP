@@ -1127,6 +1127,95 @@ app.delete('/delete-slider/:sliderId', async (req, res) => {
     });
 });
 
+// 1. Fetch departments with course counts
+app.get('/departments-with-courses', (req, res) => {
+    const query = `
+        SELECT d.code AS department_code, d.name AS department_name, COUNT(c.id) AS course_count
+        FROM department d
+        LEFT JOIN course c ON d.code = c.department
+        GROUP BY d.code;
+    `;
+    db.query(query, (err, results) => {
+        if (err) {
+        return res.status(500).json({ error: 'Failed to fetch departments.' });
+        }
+        res.json(results.map(row => ({
+        id: row.department_code,
+        name: row.department_name,
+        course_count: row.course_count
+        })));
+    });
+});
+
+// 2. Search courses
+app.get('/search-courses', (req, res) => {
+    const query = req.query.q;
+    const sql = `
+        SELECT c.id, c.name, c.department AS department, c.instructor
+        FROM course c
+        WHERE c.name LIKE ? OR c.id LIKE ? OR c.department LIKE ?;
+    `;
+    db.query(sql, [`%${query}%`, `%${query}%`, `%${query}%`], (err, results) => {
+        if (err) {
+        return res.status(500).json({ error: 'Failed to search courses.' });
+        }
+        res.json(results);
+    });
+});
+
+// 3. Get course details by ID
+app.get('/courses/:id', (req, res) => {
+    const courseId = req.params.id;
+    const sql = `
+    SELECT 
+        c.id, 
+        c.name, 
+        d.name AS department, 
+        i.id AS facultyId, 
+        CONCAT(i.firstName, ' ', i.lastName) AS facultyName
+    FROM course c
+    LEFT JOIN department d ON c.department = d.code
+    LEFT JOIN instructor i ON c.instructor = i.id
+    WHERE c.id = ?;
+    `;
+    db.query(sql, [courseId], (err, results) => {
+    if (err || results.length === 0) {
+        return res.status(404).json({ error: 'Course not found.' });
+    }
+    res.json(results[0]);
+    });
+});  
+
+// 4. Add a new course
+app.post('/courses', (req, res) => {
+    const { id, name, department, facultyId } = req.body;
+    const sql = 'INSERT INTO course (id, name, department, instructor) VALUES (?, ?, ?, ?)';
+    db.query(sql, [id, name, department, facultyId], (err, result) => {
+    if (err) {
+        return res.status(500).json({ error: 'Failed to add course.' });
+    }
+    res.status(201).json({ message: 'Course added successfully.' });
+    });
+});
+
+// 5. Update course details
+app.put('/courses/:id', (req, res) => {
+    const { name, department, instructor } = req.body;
+    const courseId = req.params.id;
+  
+    const sql = `
+      UPDATE course
+      SET name = ?, department = ?, instructor = ?
+      WHERE id = ?;
+    `;
+    db.query(sql, [name, department, instructor, courseId], (err, result) => {
+      if (err) {
+        return res.status(500).json({ error: 'Failed to update course.' });
+      }
+      res.status(200).json({ message: 'Course updated successfully.' });
+    });
+});  
+
 app.listen(3000, () => {
     console.log('Server running on port 3000');
 });
