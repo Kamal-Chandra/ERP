@@ -10,7 +10,7 @@ app.use(bodyParser.json());
 const db = mysql.createConnection({
     host: 'localhost',
     user: 'root',
-    password: 'MySQLRoot',
+    password: 'Prateek',
     database: 'college'
 });
 
@@ -1126,6 +1126,64 @@ app.delete('/delete-slider/:sliderId', async (req, res) => {
         res.status(200).json({ message: 'Slider deleted successfully' });
     });
 });
+
+// Add a new alumni
+app.post('/api/alumni', (req, res) => {
+    const { id, name, graduationYear, currentCompany, contactNumber, email } = req.body;
+    db.query(
+      'INSERT INTO alumni (id, name, graduationYear, currentCompany, contactNumber, email) VALUES (?, ?, ?, ?, ?, ?)',
+      [id, name, graduationYear, currentCompany, contactNumber, email],
+      (err, result) => {
+        if (err) {
+          return res.status(500).json({ error: err });
+        }
+        res.json({ message: 'Alumni added successfully' });
+      }
+    );
+  });
+// Alumini routes
+
+// Endpoint to get all alumni data
+app.get('/api/alumni', (req, res) => {
+    db.query('SELECT * FROM alumni', (err, results) => {
+      if (err) {
+        return res.status(500).send(err);
+      }
+      res.json(results);
+    });
+  });
+  
+  
+  // Endpoint to update an alumni's information
+  app.put('/api/alumni/:id', (req, res) => {
+    const { id } = req.params;
+    const { name, graduationYear, currentCompany, contactNumber, email } = req.body;
+    db.query('UPDATE alumni SET name = ?, graduationYear = ?, currentCompany = ?, contactNumber = ?, email = ? WHERE id = ?', [name, graduationYear, currentCompany, contactNumber, email, id], (err) => {
+      if (err) {
+        return res.status(500).send(err);
+      }
+      res.send({ id, name, graduationYear, currentCompany, contactNumber, email });
+    });
+  });
+  
+  // Endpoint to delete an alumni
+  app.delete('/api/alumni/:id', (req, res) => {
+    const { id } = req.params;
+    db.query('DELETE FROM alumni WHERE id = ?', [id], (err) => {
+      if (err) {
+        return res.status(500).send(err);
+      }
+      res.sendStatus(204);
+    });
+  });
+    const companyRoutes = require('./routes/companyRoutes');
+    const applicationRoutes = require('./routes/applicationRoutes');
+    app.use('/api/companies', companyRoutes);
+    app.use('/api/applications', applicationRoutes);
+
+
+
+  
 
 app.listen(3000, () => {
     console.log('Server running on port 3000');

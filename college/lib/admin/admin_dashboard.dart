@@ -1,4 +1,6 @@
 import 'dart:convert';
+import 'package:college/admin/managements/Placement/Placement.dart';
+import 'package:college/admin/managements/alumini/alumni_panel.dart';
 import 'package:get/get.dart';
 import 'widgets/admin_sidebar.dart';
 import 'package:college/app_bar.dart';
@@ -20,17 +22,20 @@ class AdminDashboardController extends GetxController {
 
   Future<void> fetchAdminDetails(String adminId) async {
     try {
-      final response = await http.get(Uri.parse('http://localhost:3000/get-admin/$adminId'));
+      final response =
+          await http.get(Uri.parse('http://localhost:3000/get-admin/$adminId'));
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        adminName.value = '${data['firstName'] ?? 'No Name'} ${data['lastName'] ?? ''}';
+        adminName.value =
+            '${data['firstName'] ?? 'No Name'} ${data['lastName'] ?? ''}';
         adminEmail.value = data['email'] ?? 'No Email';
       } else {
         Get.snackbar('Error', 'Failed to fetch admin details');
       }
     } catch (e) {
-      Get.snackbar('Error', 'An error occurred while fetching admin details: $e');
+      Get.snackbar(
+          'Error', 'An error occurred while fetching admin details: $e');
     }
   }
 
@@ -46,7 +51,8 @@ class AdminDashboard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final AdminDashboardController dashboardController = Get.put(AdminDashboardController());
+    final AdminDashboardController dashboardController =
+        Get.put(AdminDashboardController());
 
     // Fetch admin details on initialization
     dashboardController.fetchAdminDetails(adminId);
@@ -56,11 +62,11 @@ class AdminDashboard extends StatelessWidget {
       body: Row(
         children: [
           // Sidebar
-          Obx(()=>AdminSideBar(
-            id: adminId,
-            adminEmail: dashboardController.adminEmail.value,
-            adminName: dashboardController.adminName.value,
-          )),
+          Obx(() => AdminSideBar(
+                id: adminId,
+                adminEmail: dashboardController.adminEmail.value,
+                adminName: dashboardController.adminName.value,
+              )),
 
           // Content
           Expanded(
@@ -81,9 +87,9 @@ class AdminDashboard extends StatelessWidget {
                 case 'Feedback':
                   return const AdminFeedback();
                 case 'Placements':
-                  return const AdminPlacement();
+                  return PlacementPanelApp();
                 case 'Alumni':
-                  // return const AlumniNetwork();
+                  return AlumniPanel();
                 default:
                   return const Center(child: Text('Admin Panel'));
               }
