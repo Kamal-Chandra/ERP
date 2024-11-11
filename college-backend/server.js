@@ -1216,6 +1216,134 @@ app.put('/courses/:id', (req, res) => {
     });
 });  
 
+// Add a new alumni
+app.post('/api/alumni', (req, res) => {
+    const { id, name, graduationYear, currentCompany, contactNumber, email } = req.body;
+    db.query(
+      'INSERT INTO alumni (id, name, graduationYear, currentCompany, contactNumber, email) VALUES (?, ?, ?, ?, ?, ?)',
+      [id, name, graduationYear, currentCompany, contactNumber, email],
+      (err, result) => {
+        if (err) {
+          return res.status(500).json({ error: err });
+        }
+        res.json({ message: 'Alumni added successfully' });
+      }
+    );
+  });
+// Alumini routes
+
+// Endpoint to get all alumni data
+app.get('/api/alumni', (req, res) => {
+    db.query('SELECT * FROM alumni', (err, results) => {
+      if (err) {
+        return res.status(500).send(err);
+      }
+      res.json(results);
+    });
+  });
+  
+  
+  // Endpoint to update an alumni's information
+  app.put('/api/alumni/:id', (req, res) => {
+    const { id } = req.params;
+    const { name, graduationYear, currentCompany, contactNumber, email } = req.body;
+    db.query('UPDATE alumni SET name = ?, graduationYear = ?, currentCompany = ?, contactNumber = ?, email = ? WHERE id = ?', [name, graduationYear, currentCompany, contactNumber, email, id], (err) => {
+      if (err) {
+        return res.status(500).send(err);
+      }
+      res.send({ id, name, graduationYear, currentCompany, contactNumber, email });
+    });
+  });
+  
+  // Endpoint to delete an alumni
+  app.delete('/api/alumni/:id', (req, res) => {
+    const { id } = req.params;
+    db.query('DELETE FROM alumni WHERE id = ?', [id], (err) => {
+      if (err) {
+        return res.status(500).send(err);
+      }
+      res.sendStatus(204);
+    });
+  });
+    const companyRoutes = require('./routes/companyRoutes');
+    const applicationRoutes = require('./routes/applicationRoutes');
+    app.use('/api/companies', companyRoutes);
+    app.use('/api/applications', applicationRoutes);
+
+    // Search books by any attribute
+app.get('/books/search', (req, res) => {
+    const query = req.query.query;
+    const sqlQuery = `
+      SELECT * FROM books 
+      WHERE 
+        book_id LIKE ? OR 
+        title LIKE ? OR 
+        author LIKE ? OR 
+        isbn LIKE ? OR 
+        total_copies LIKE ? OR 
+        copies_available LIKE ?
+    `;
+    db.query(sqlQuery, [
+      '%${query}%',
+      '%${query}%',
+      '%${query}%',
+      '%${query}%',
+      '%${query}%',
+      '%${query}%'
+    ], (err, results) => {
+      if (err) throw err;
+      res.json(results);
+    });
+  });
+  
+  // Add new book to books table
+  app.post('/books/add', (req, res) => {
+    const { title, author, isbn, total_copies, copies_available } = req.body;
+    const sqlInsert = `
+      INSERT INTO books (title, author, isbn, total_copies, copies_available) 
+      VALUES (?, ?, ?, ?, ?)
+    `;
+    db.query(sqlInsert, [title, author, isbn, total_copies, copies_available], (err, result) => {
+      if (err) throw err;
+      res.json({ message: 'Book added successfully', bookId: result.insertId });
+    });
+  });
+
+  app.get('/search', (req, res) => {
+    const { issuer_id } = req.query;
+    let query = 'SELECT * FROM issued_books WHERE ';
+  
+    if (issuer_id) {
+      query += ` issue_id = ${mysql.escape(issuer_id)}`;
+    }
+  
+    db.query(query, (err, results) => {
+      if (err) {
+        res.status(500).send('Server error');
+        return;
+      }
+      res.json(results);
+    });
+  });
+  
+  // Endpoint to update the return date
+  app.post('/add-return-date', (req, res) => {
+    const { issue_id, return_date } = req.body;
+  
+    if (!issue_id || !return_date) {
+      return res.status(400).send('issue_id and return_date are required');
+    }
+  
+    const query = 'UPDATE issued_books SET date_of_return = ? WHERE issue_id = ?';
+    db.query(query, [return_date, issue_id], (err, result) => {
+      if (err) {
+        res.status(500).send('Server error');
+        return;
+      }
+      res.send('Return date updated successfully');
+    });
+  });
+
 app.listen(3000, () => {
     console.log('Server running on port 3000');
 });

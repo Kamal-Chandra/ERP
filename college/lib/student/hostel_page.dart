@@ -33,7 +33,7 @@ class _HostelPageState extends State<HostelPage> {
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         setState(() {
-          roomNumber = data['room_number'] ?? 'Not allocated';
+          roomNumber = data['room_number']?.toString()??'Not Allocated';
           roommates = List.from(data['roommates'] ?? []);
           isLoading = false;
         });
@@ -45,7 +45,7 @@ class _HostelPageState extends State<HostelPage> {
       setState(() {
         isLoading = false;
       });
-    }
+    }    
   }
 
   @override
