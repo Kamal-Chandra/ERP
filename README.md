@@ -76,7 +76,7 @@ The **College ERP** system is a comprehensive solution designed to manage variou
 - [Prateek Vashishth](https://github.com/Prateek88786)
 - [Kamal Chandra](https://github.com/Kamal-Chandra)
 - [Harsh Agarwal](https://github.com/HarshAg1702)
-- [Amrutha Kumar K]()
+- [Amrutha Kumar K](https://github.com/AmruthaKumarK)
 
 **Guided by:** Dr. Shishupal Kumar
 
@@ -93,28 +93,24 @@ The **College ERP** system is a comprehensive solution designed to manage variou
 2. **Install dependencies:**
    - Backend:
      ```bash
-     cd backend
-     npm install
+     cd college-backend
+     node server.js
      ```
    - Frontend:
      ```bash
-     cd frontend
+     cd college
      flutter pub get
      ```
 
 3. **Run the application:**
    - Backend:
      ```bash
-     npm start
+     node server.js
      ```
    - Frontend:
      ```bash
-     flutter run
+     flutter run -d chrome
      ```
-
-4. **Access the application** using the URL provided after running the server.
-
----
 
 ## **License**
 
