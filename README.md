@@ -73,10 +73,10 @@ The **College ERP** system is a comprehensive solution designed to manage variou
 
 ## **Authors and Contributors**
 
-- ([Prateek Vashishth](https://github.com/Prateek88786))
-- ([Kamal Chandra](https://github.com/Kamal-Chandra))
-- ([Harsh Agarwal](https://github.com/HarshAg1702))
-- ([Amrutha Kumar K]())
+- [Prateek Vashishth](https://github.com/Prateek88786)
+- [Kamal Chandra](https://github.com/Kamal-Chandra)
+- [Harsh Agarwal](https://github.com/HarshAg1702)
+- [Amrutha Kumar K]()
 
 **Guided by:** Dr. Shishupal Kumar
 
