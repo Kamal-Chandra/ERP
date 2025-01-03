@@ -86,7 +86,7 @@ The **College ERP** system is a comprehensive solution designed to manage variou
 
 1. **Clone the repository:**
    ```bash
-   git clone <repository_url>
+   git clone https://github.com/Kamal-Chandra/ERP.git
    cd College-ERP
    ```
 
